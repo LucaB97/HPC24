@@ -1,0 +1,92 @@
+
+
+
+--------------------------------------------
+Algorithm: 3
+--------------------------------------------
+
+
+Procs: 2
+
+Iter: 1
+# OSU MPI Broadcast Latency Test v7.3
+# Datatype: MPI_CHAR.
+# Size       Avg Latency(us)
+2                       0.16
+4                       0.16
+8                       0.16
+16                      0.15
+
+
+Procs: 4
+
+Iter: 1
+# OSU MPI Broadcast Latency Test v7.3
+# Datatype: MPI_CHAR.
+# Size       Avg Latency(us)
+2                       0.80
+4                       0.80
+8                       0.82
+16                      0.80
+
+
+Procs: 8
+
+Iter: 1
+# OSU MPI Broadcast Latency Test v7.3
+# Datatype: MPI_CHAR.
+# Size       Avg Latency(us)
+2                       2.98
+4                       2.98
+8                       2.99
+16                      2.96
+
+
+Procs: 16
+
+Iter: 1
+# OSU MPI Broadcast Latency Test v7.3
+# Datatype: MPI_CHAR.
+# Size       Avg Latency(us)
+2                       5.86
+4                       4.94
+8                       4.92
+16                      4.94
+
+
+Procs: 32
+
+Iter: 1
+# OSU MPI Broadcast Latency Test v7.3
+# Datatype: MPI_CHAR.
+# Size       Avg Latency(us)
+2                      10.66
+4                      10.67
+8                      10.68
+16                     10.56
+
+
+Procs: 64
+
+Iter: 1
+# OSU MPI Broadcast Latency Test v7.3
+# Datatype: MPI_CHAR.
+# Size       Avg Latency(us)
+2                      24.05
+4                      26.58
+8                      25.12
+16                     25.23
+
+
+Procs: 128
+
+Iter: 1
+# OSU MPI Broadcast Latency Test v7.3
+# Datatype: MPI_CHAR.
+# Size       Avg Latency(us)
+2                      62.54
+4                      63.52
+8                      54.39
+16                     52.93
+
+-------------------------------------------
