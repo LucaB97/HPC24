@@ -8,7 +8,6 @@
 #SBATCH --error=%x.%j.err
 #SBATCH -N1
 
-salloc -N 1 --ntasks-per-node 8 -p EPYC --time=1:0:0
 
 cd OpenMPI/
 repetitions=5
