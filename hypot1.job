@@ -1,5 +1,0 @@
-#!/bin/bash
-
-cd OpenMPI/
-algorithms=(0 1 3)
-./runhypot1.sh "EPYC" 128 "bcast" "${algorithms[@]}"
