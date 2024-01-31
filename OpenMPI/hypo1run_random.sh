@@ -40,23 +40,29 @@ module load openMPI/4.1.5/gnu
 printf "Operation: ${operation}  , Node: ${node}" > "${operation}_all_results_${node}.txt"
 
 # For-loop on the used algorithms
-for R in $(seq 1 $REPETITIONS)
+for R in $(seq 1 $repetitions)
 do
-    curr_alg=$(($RANDOM % $size_algs))
-    curr_mapping=$(($RANDOM % $size_mapping))
-    curr_iters=$(($RANDOM % $size_iterations))
-    curr_warmup=$(($RANDOM % $size_warmup))
-    curr_numprocs=$(($RANDOM % $size_numprocs))
+    alg_idx=$(($RANDOM % $size_algs))
+    mapping_idx=$(($RANDOM % $size_mapping))
+    iters_idx=$(($RANDOM % $size_iterations))
+    warmup_idx=$(($RANDOM % $size_warmup))
+    numprocs_idx=$(($RANDOM % $size_numprocs))
     
-    printf "\n\n--------------------------------------------\n
-Repetition: $R\n\n
-Algorithm: ${ALGS[$curr_alg]}\n
-Procs: ${NUMPROCS[$curr_numprocs]}\n
-Mapping: ${MAPPING[$curr_mapping]}\n
-Iterations: ${ITERATIONS[$curr_iters]}\n
-Warmup: ${WARMUP[$curr_warmup]}\n >> "${operation}_all_results_${node}.txt"
+    curr_alg=${ALGS[$alg_idx]}
+    curr_numprocs=${NUMPROCS[$numprocs_idx]}
+    curr_mapping=${MAPPING[$mapping_idx]}
+    curr_iters=${ITERATIONS[$iters_idx]}
+    curr_warmup=${WARMUP[$warmup_idx]}
 
-    mpirun -np ${NUMPROCS[$curr_numprocs]} --map-by ${MAPPING[$curr_mapping]} --mca coll_tuned_use_dynamic_rules true --mca coll_tuned_${operation}_algorithm ${ALGS[$curr_alg]} osu_${operation} -f -z -i ${ITERATIONS[$curr_iters]} -x ${WARMUP[$curr_warmup]} > "curr_results_${node}.txt"
+    printf "\n\n--------------------------------------------\n
+Repetition: $R\n
+Algorithm: $curr_alg
+Procs: $curr_numprocs
+Mapping: $curr_mapping
+Iterations: $curr_iters
+Warmup: $curr_warmup\n" >> "${operation}_all_results_${node}.txt"
+
+    mpirun -np $curr_numprocs --map-by $curr_mapping --mca coll_tuned_use_dynamic_rules true --mca coll_tuned_${operation}_algorithm $curr_alg osu_${operation} -f -z -i $curr_iters -x $curr_warmup > "curr_results_${node}.txt"
     cat "curr_results_${node}.txt" >> "${operation}_all_results_${node}.txt"
 done
     
