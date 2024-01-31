@@ -9,5 +9,5 @@
 #SBATCH -N1
 
 cd OpenMPI/
-repetitions=1
+repetitions=3
 ./hypo1run_random.sh "THIN" 16 "bcast" $repetitions

@@ -37,7 +37,7 @@ module purge
 module load openMPI/4.1.5/gnu
 
 
-printf "Operation: ${operation}  , Node: ${node}" > "${operation}_all_results_${node}.txt"
+printf "\nOperation: ${operation}  , Node: ${node}" > "${operation}_all_results_${node}.txt"
 
 # For-loop on the used algorithms
 for R in $(seq 1 $repetitions)
