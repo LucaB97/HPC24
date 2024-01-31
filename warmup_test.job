@@ -10,4 +10,4 @@
 
 cd OpenMPI/
 repetitions=3
-./hypo1run_random.sh "THIN" 16 "bcast" $repetitions
+./changewarmup.sh "THIN" 16 "bcast" $repetitions
