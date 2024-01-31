@@ -1,7 +1,7 @@
 #!/bin/bash
 
-#SBATCH --job-name=test_iters_epyc
-#SBATCH --time=0-01:30:00
+#SBATCH --job-name=warmuptest
+#SBATCH --time=0-00:30:00
 #SBATCH -pTHIN
 #SBATCH -n16
 #SBATCH --output=%x.%j.out
@@ -9,5 +9,5 @@
 #SBATCH -N1
 
 cd OpenMPI/
-repetitions=3
+repetitions=2
 ./changewarmup.sh "THIN" 16 "bcast" $repetitions

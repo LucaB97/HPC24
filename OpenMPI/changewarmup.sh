@@ -36,7 +36,7 @@ module purge
 module load openMPI/4.1.5/gnu
 
 
-printf "\nOperation: ${operation}  , Node: ${node}" > "${operation}_all_results_${node}.txt"
+printf "\nOperation: ${operation}\nNode: ${node}" > "${operation}_all_results_${node}.txt"
 
 # For-loop on the used algorithms
 for R in $(seq 1 $repetitions)
@@ -51,7 +51,7 @@ do
     curr_mapping=${MAPPING[$mapping_idx]}
     curr_iters=${ITERATIONS[$iters_idx]}
 
-    printf "\n\n--------------------------------------------\n
+    printf "\n\n--------------------------------------------
 Test: $R\n
 Algorithm: $curr_alg
 Procs: $curr_numprocs
@@ -61,7 +61,7 @@ Iterations: $curr_iters
 
     for W in "${WARMUP[@]}"
     do
-        printf "\nWarmup: $W\n" >> "${operation}_all_results_${node}.txt"
+        printf "\nWarmup: $W" >> "${operation}_all_results_${node}.txt"
         mpirun -np $curr_numprocs --map-by $curr_mapping --mca coll_tuned_use_dynamic_rules true --mca coll_tuned_${operation}_algorithm $curr_alg osu_${operation} -f -z -i $curr_iters -x $W > "curr_results_${node}.txt"
         cat "curr_results_${node}.txt" >> "${operation}_all_results_${node}.txt"
     done
