@@ -1,0 +1,13 @@
+#!/bin/bash
+
+#SBATCH --job-name=test_iters_epyc
+#SBATCH --time=0-01:30:00
+#SBATCH -pTHIN
+#SBATCH -n16
+#SBATCH --output=%x.%j.out
+#SBATCH --error=%x.%j.err
+#SBATCH -N1
+
+cd OpenMPI/
+repetitions=1
+./hypo1run_random.sh "THIN" 16 "bcast" $repetitions
