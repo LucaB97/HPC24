@@ -16,10 +16,10 @@ k=2
 i=0
 while [[ $k -le $cpus ]] ; do
 NUMPROCS[$i]=$k
-if [ $k -le $((16)) ]; then
-	k=$((2*k))
+if [ $k -le $((8)) ]; then
+    k=$((2*k))
 else
-	k=$((k+16))
+    k=$((k+8))
 fi
 i=$((i+1))
 done
