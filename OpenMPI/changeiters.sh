@@ -72,4 +72,4 @@ printf "\n-------------------------------------------\n" >> "${operation}_all_re
 ##rm summarize
 rm curr_results_${node}.txt
 X=$(date +%m-%d--%H-%M)
-mv ${operation}_all_results_${node}.txt ../results/hypo1/$X-all.txt
+mv ${operation}_all_results_${node}.txt ../results/tuning/$X-all.txt
