@@ -3,8 +3,8 @@
 ##get info for the execution
 node=$1
 cpus=$2
-operation=$3
-repetitions=$4
+repetitions=$3
+operation=$4
 
 ALGS=(0 1 2 3 4)
 MAPPING=("core" "L3cache" "numa" "socket")
@@ -16,10 +16,10 @@ k=2
 i=0
 while [[ $k -le $cpus ]] ; do
 NUMPROCS[$i]=$k
-if [ $k -le $((8)) ]; then
+if [ $k -le $((16)) ]; then
     k=$((2*k))
 else
-    k=$((k+8))
+    k=$((k+16))
 fi
 i=$((i+1))
 done
@@ -29,9 +29,7 @@ size_numprocs=${#NUMPROCS[@]}
 size_mapping=${#MAPPING[@]}
 size_iters=${#ITERATIONS[@]}
 
-###c++ summarize.cpp -o summarize
-###mv summarize operations/
-cd operations/
+cd ../operations/
 module purge
 module load openMPI/4.1.5/gnu
 
@@ -62,7 +60,7 @@ Iterations: $curr_iters
     for W in "${WARMUP[@]}"
     do
         printf "\nWarmup: $W" >> "${operation}_all_results_${node}.txt"
-        mpirun -np $curr_numprocs --map-by $curr_mapping --mca coll_tuned_use_dynamic_rules true --mca coll_tuned_${operation}_algorithm $curr_alg osu_${operation} -f -z -i $curr_iters -x $W > "curr_results_${node}.txt"
+        mpirun -np $curr_numprocs --map-by $curr_mapping --mca coll_tuned_use_dynamic_rules true --mca coll_tuned_${operation}_algorithm $curr_alg osu_${operation} -f -i $curr_iters -x $W > "curr_results_${node}.txt"
         cat "curr_results_${node}.txt" >> "${operation}_all_results_${node}.txt"
     done
 done
@@ -72,4 +70,4 @@ printf "\n-------------------------------------------\n" >> "${operation}_all_re
 ##rm summarize
 rm curr_results_${node}.txt
 X=$(date +%m-%d--%H-%M)
-mv ${operation}_all_results_${node}.txt ../results/tuning/$X-all.txt
+mv ${operation}_all_results_${node}.txt ../tuning/warmup/$X.txt
