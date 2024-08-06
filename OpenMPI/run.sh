@@ -1,10 +1,10 @@
-#/usr/bin/bash
+#!/bin/bash
 
 ##get info for the execution
 NODE=$1
 CPUS=$2
-OPERATION=$3
-REPETITIONS=$4
+REPETITIONS=$3
+OPERATION=$4
 ALGS=("${@:5}")
 
 ##create array of values for number of processes (np) for mpirun

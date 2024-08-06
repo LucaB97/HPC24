@@ -1,111 +1,24 @@
-##options to be specified after calling mpirun:
+Usage example:
+bash slurm_THIN.job <num_repetitions> <operation_name> 0 <other_algorithm_1> ... <other_algorithm_n>
 
---map-by : Mapping Policy [slot | hwthread | core | socket (default) | numa | board | node]
+Operations & Algorithms:
+barrier:
+            Valid values: 0:"ignore", 1:"linear",
+            2:"double_ring", 3:"recursive_doubling", 4:"bruck",
+            5:"two_proc", 6:"tree"
+bcast:
+            Valid values: 0:"ignore", 1:"basic_linear",
+            2:"chain", 3:"pipeline", 4:"split_binary_tree",
+            5:"binary_tree", 6:"binomial", 7:"knomial",
+            8:"scatter_allgather", 9:"scatter_allgather_ring"
+reduce:
+            Valid values: 0:"ignore", 1:"linear", 2:"chain",
+            3:"pipeline", 4:"binary", 5:"binomial",
+            6:"in-order_binary", 7:"rabenseifner"
+gather:
+            Valid values: 0:"ignore", 1:"basic_linear",
+            2:"binomial", 3:"linear_sync"
+scatter:
+            Valid values: 0:"ignore", 1:"basic_linear",
+            2:"binomial", 3:"linear_nb"
 
-
-##options to be put after the executable file name:
-
---message-size (-m) : set the minimum and/or the maximum message size to MIN and/or MAX bytes respectively. Examples:
-                            -m 128      // min = default, max = 128
-                            -m 2:128    // min = 2, max = 128
-                            -m 2:       // min = 2, max = default
-
---iterations (-i) : number of iterations for timing (default 10000)
-
---warmup (-x) : number of warmup iterations to skip before timing (default 200)
-
-
-
-###PROJECT DESCRIPTION:
-
-For bcast and another operation:
-
-You are supposed to estimate the latency of default openMPI implementation, 
-varying the *number of processes* and the *size of the messages exchanged*,
-and then compare this latter with the values you obtain using different algorithms.
-
-Specifically:
-• Run several repetitions of the programs and collect performance numbers, 
-estimating the error in order to have a baseline for the two operations.
-Consider to increment warmup iterations(-x) and total iterations (-i).
-Feel free to experiment with different messages size and task mapping with --map-by option.
-
-##example of run instruction:
-mpirun  --mca coll_tuned_use_dynamic_rules true --mca coll_tuned_bcast_algorithm 0 osu_bcast
-
-• Repeat for the other algorithms and compare the results
-
-• Try to understand/infer the performance model behind the algorithms you selected, taking into consideration the architecture on which they are being executed.
-For this, it is necessary to estimate the latency of point-to-point communication routines, since collectives are built on top of them. Use the OSU benchmark (osu_latency). Explore the latency among cores located in different regions of the processor using the mpirun option --cpu-list. For instance, running *mpirun -np 2 --cpu-list 0,8 osu_latency* will reveal higher latency compared to 2 neighboring cores, as selected by the command *mpirun -np 2 --cpu-list 0,1 osu_latency*.
-
-
-
-###PARAMETERS
-
-barrier algorithms:
-
-    MCA coll tuned: parameter "coll_tuned_barrier_algorithm" (current
-                    value: "ignore", data source: default, level: 5
-                    tuner/detail, type: int)
-                    Which barrier algorithm is used. Can be locked down
-                    to choice of: 0 ignore, 1 linear, 2 double ring, 3:
-                    recursive doubling 4: bruck, 5: two proc only, 6:
-                    tree. Only relevant if coll_tuned_use_dynamic_rules
-                    is true.
-                    Valid values: 0:"ignore", 1:"linear",
-                    2:"double_ring", 3:"recursive_doubling", 4:"bruck",
-                    5:"two_proc", 6:"tree"
-
-bcast algorithms:
-
-    MCA coll tuned: parameter "coll_tuned_bcast_algorithm" (current
-                    value: "ignore", data source: default, level: 5
-                    tuner/detail, type: int)
-                    Which bcast algorithm is used. Can be locked down
-                    to choice of: 0 ignore, 1 basic linear, 2 chain, 3:
-                    pipeline, 4: split binary tree, 5: binary tree, 6:
-                    binomial tree, 7: knomial tree, 8:
-                    scatter_allgather, 9: scatter_allgather_ring. Only
-                    relevant if coll_tuned_use_dynamic_rules is true.
-                    Valid values: 0:"ignore", 1:"basic_linear",
-                    2:"chain", 3:"pipeline", 4:"split_binary_tree",
-                    5:"binary_tree", 6:"binomial", 7:"knomial",
-                    8:"scatter_allgather", 9:"scatter_allgather_ring"
-
-reduce algorithms:
-
-    MCA coll tuned: parameter "coll_tuned_reduce_algorithm" (current
-                    value: "ignore", data source: default, level: 5
-                    tuner/detail, type: int)
-                    Which reduce algorithm is used. Can be locked down
-                    to choice of: 0 ignore, 1 linear, 2 chain, 3
-                    pipeline, 4 binary, 5 binomial, 6 in-order binary,
-                    7 rabenseifner. Only relevant if
-                    coll_tuned_use_dynamic_rules is true.
-                    Valid values: 0:"ignore", 1:"linear", 2:"chain",
-                    3:"pipeline", 4:"binary", 5:"binomial",
-                    6:"in-order_binary", 7:"rabenseifner"
-
-gather algorithms:
-
-    MCA coll tuned: parameter "coll_tuned_gather_algorithm" (current
-                    value: "ignore", data source: default, level: 5
-                    tuner/detail, type: int)
-                    Which gather algorithm is used. Can be locked down
-                    to choice of: 0 ignore, 1 basic linear, 2 binomial,
-                    3 linear with synchronization. Only relevant if
-                    coll_tuned_use_dynamic_rules is true.
-                    Valid values: 0:"ignore", 1:"basic_linear",
-                    2:"binomial", 3:"linear_sync"
-
-scatter algorithms:
-
-    MCA coll tuned: parameter "coll_tuned_scatter_algorithm" (current
-                    value: "ignore", data source: default, level: 5
-                    tuner/detail, type: int)
-                    Which scatter algorithm is used. Can be locked down
-                    to choice of: 0 ignore, 1 basic linear, 2 binomial,
-                    3 non-blocking linear. Only relevant if
-                    coll_tuned_use_dynamic_rules is true.
-                    Valid values: 0:"ignore", 1:"basic_linear",
-                    2:"binomial", 3:"linear_nb"
