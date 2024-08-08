@@ -52,12 +52,12 @@ Mapping: $curr_mapping
         do  
             printf "\nIterations: $I    Warmup: $W"
             printf "\nIterations: $I\nWarmup: $W" >> "test__${R}.txt"
-            mpirun -np $cpus --map-by $curr_mapping --mca coll_tuned_use_dynamic_rules true --mca coll_tuned_${curr_operation}_algorithm $curr_alg osu_${curr_operation} -f -i $I -x $W > "curr_results.txt"
-            cat "curr_results.txt" >> "test__${R}.txt"
+            mpirun -np $cpus --map-by $curr_mapping --mca coll_tuned_use_dynamic_rules true --mca coll_tuned_${curr_operation}_algorithm $curr_alg osu_${curr_operation} -f -i $I -x $W > "curr_results_{$R}.txt"
+            cat "curr_results_{$R}.txt" >> "test__${R}.txt"
         done
     done
     printf "\n"
     mv "test__${R}.txt" ../parameters_study/iterations/tests/$X/
 done
 
-rm curr_results.txt
+rm curr_results_{$R}.txt

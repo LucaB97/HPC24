@@ -33,7 +33,7 @@ module load openMPI/4.1.5/gnu
 # For-loop on the used algorithms
 for R in $(seq 1 $repetitions)
 do  
-    printf "Test $R"
+    # printf "Test $R"
     operation_idx=$(($RANDOM % $size_operations))
     alg_idx=$(($RANDOM % $size_algs))
     
@@ -47,13 +47,13 @@ Algorithm: $curr_alg
 
     for M in "${MAPPING[@]}"
     do
-        printf "\nMapping: $M"
+        # printf "\nMapping: $M"
         printf "\nMapping: $M" >> "test__${R}.txt"
-            mpirun -np $cpus --map-by $M --mca coll_tuned_use_dynamic_rules true --mca coll_tuned_${curr_operation}_algorithm $curr_alg osu_${curr_operation} -f -i $ITERATIONS -x $WARMUP > "curr_results.txt"
-            cat "curr_results.txt" >> "test__${R}.txt"
+            mpirun -np $cpus --map-by $M --mca coll_tuned_use_dynamic_rules true --mca coll_tuned_${curr_operation}_algorithm $curr_alg osu_${curr_operation} -f -i $ITERATIONS -x $WARMUP > "curr_results_{$R}.txt"
+            cat "curr_results_{$R}.txt" >> "test__${R}.txt"
     done
-    printf "\n"
+    # printf "\n"
     mv "test__${R}.txt" ../parameters_study/mapping/tests/$X/
 done
 
-rm curr_results.txt
+rm curr_results_{$R}.txt
