@@ -1,0 +1,63 @@
+#/usr/bin/bash
+
+X=$(date +%m-%d--%H-%M)
+mkdir tests/$X
+
+## get info for the execution
+node=$1
+cpus=$2
+repetitions=$3
+
+## these parameters will be generated randomly at each repetition:
+## the idea is to find out if it is possible to study the impact of **total iterations** and **warmup iterations**
+## on performances independently on the specific execution 
+OPERATIONS=("bcast" "scatter" "gather" "reduce" "barrier")
+ALGS=(0 1 2 3)
+MAPPINGS=("core" "L3cache" "numa" "socket")
+
+size_operations=${#OPERATIONS[@]}
+size_algs=${#ALGS[@]}
+size_mappings=${#MAPPINGS[@]}
+
+## all the combinations of the following two variables values will be used
+ITERATIONS=(10000 20000 50000 100000)
+WARMUP=(200 1000 2000 5000)
+
+
+module purge
+module load openMPI/4.1.5/gnu
+cd ../../operations/
+
+# For-loop on the used algorithms
+for R in $(seq 1 $repetitions)
+do  
+    printf "Test $R"
+    operation_idx=$(($RANDOM % $size_operations))
+    alg_idx=$(($RANDOM % $size_algs))
+    mapping_idx=$(($RANDOM % $size_mappings))
+    
+    curr_operation=${OPERATIONS[$operation_idx]}
+    curr_alg=${ALGS[$alg_idx]}
+    curr_mapping=${MAPPINGS[$mapping_idx]}
+
+    printf "Node: $node     CPUS: $cpus\n\n--------------------------------------------
+Operation: $curr_operation
+Algorithm: $curr_alg
+Mapping: $curr_mapping
+--------------------------------------------\n" > "test__${R}.txt"
+
+    for I in "${ITERATIONS[@]}"
+    do
+        for W in "${WARMUP[@]}" 
+        do  
+            printf "\nIterations: $I    Warmup: $W"
+            printf "\nIterations: $I\nWarmup: $W" >> "test__${R}.txt"
+            mpirun -np $cpus --map-by $curr_mapping --mca coll_tuned_use_dynamic_rules true --mca coll_tuned_${curr_operation}_algorithm $curr_alg osu_${curr_operation} -f -i $I -x $W > "curr_results.txt"
+            cat "curr_results.txt" >> "test__${R}.txt"
+        done
+    done
+    printf "\n"
+    mv "test__${R}.txt" ../parameters_study/iterations/tests/$X/
+done
+
+rm curr_results.txt
