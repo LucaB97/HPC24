@@ -1,4 +1,4 @@
-Operation,Algorithm,Mapping,Size,Avg Latency(us),Min Latency(us),Max Latency(us),Iterations
+Operation,Algorithm,Mapping,Iterations,Warmup,Size,Avg Latency(us),Min Latency(us),Max Latency(us)
 scatter,2,numa,10000,200,128,5.18,1.75,7.79
 scatter,2,numa,10000,200,256,6.1,2.59,8.99
 scatter,2,numa,10000,200,512,8,3.38,11.78

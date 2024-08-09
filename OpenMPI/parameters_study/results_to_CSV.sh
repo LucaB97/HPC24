@@ -7,7 +7,7 @@ c++ createCSV.cpp -o createCSV
 mv createCSV iterations/tests/$folder
 cd iterations/tests/$folder
 
-printf "Operation,Algorithm,Mapping,Size,Avg Latency(us),Min Latency(us),Max Latency(us),Iterations\n" > "results.csv"
+printf "Operation,Algorithm,Mapping,Iterations,Warmup,Size,Avg Latency(us),Min Latency(us),Max Latency(us)\n" > "results.csv"
 
 for X in $(seq 1 $repetitions)
     do
