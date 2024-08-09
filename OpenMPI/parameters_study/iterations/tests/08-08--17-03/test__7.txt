@@ -1,0 +1,31 @@
+Node: THIN     CPUS: 48
+
+--------------------------------------------
+Operation: barrier
+Algorithm: 0
+Mapping: L3cache
+--------------------------------------------
+
+Iterations: 10000
+Warmup: 200
+# OSU MPI Barrier Latency Test v7.3
+# Avg Latency(us)   Min Latency(us)   Max Latency(us)  Iterations
+             5.21              5.20              5.21       10000
+
+Iterations: 10000
+Warmup: 1000
+# OSU MPI Barrier Latency Test v7.3
+# Avg Latency(us)   Min Latency(us)   Max Latency(us)  Iterations
+             5.22              5.22              5.22       10000
+
+Iterations: 50000
+Warmup: 200
+# OSU MPI Barrier Latency Test v7.3
+# Avg Latency(us)   Min Latency(us)   Max Latency(us)  Iterations
+             5.22              5.22              5.22       50000
+
+Iterations: 50000
+Warmup: 1000
+# OSU MPI Barrier Latency Test v7.3
+# Avg Latency(us)   Min Latency(us)   Max Latency(us)  Iterations
+             5.23              5.22              5.23       50000

@@ -20,8 +20,8 @@ size_algs=${#ALGS[@]}
 size_mappings=${#MAPPINGS[@]}
 
 ## all the combinations of the following two variables values will be used
-ITERATIONS=(10000 20000 50000 100000)
-WARMUP=(200 1000 2000 5000)
+ITERATIONS=(10000 50000)
+WARMUP=(200 1000)
 
 
 module purge
@@ -52,12 +52,12 @@ Mapping: $curr_mapping
         do  
             printf "\nIterations: $I    Warmup: $W"
             printf "\nIterations: $I\nWarmup: $W" >> "test__${R}.txt"
-            mpirun -np $cpus --map-by $curr_mapping --mca coll_tuned_use_dynamic_rules true --mca coll_tuned_${curr_operation}_algorithm $curr_alg osu_${curr_operation} -f -i $I -x $W > "curr_results_{$R}.txt"
+            mpirun -np $cpus --map-by $curr_mapping --mca coll_tuned_use_dynamic_rules true --mca coll_tuned_${curr_operation}_algorithm $curr_alg osu_${curr_operation} -m 128:524288 -f -i $I -x $W > "curr_results_{$R}.txt"
             cat "curr_results_{$R}.txt" >> "test__${R}.txt"
         done
     done
     printf "\n"
+    rm curr_results_{$R}.txt
     mv "test__${R}.txt" ../parameters_study/iterations/tests/$X/
 done
 
-rm curr_results_{$R}.txt
