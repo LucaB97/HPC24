@@ -13,7 +13,7 @@ void createCSV(const std::string& inputFileName, const std::string& outputFileNa
     }
 
     // Write the header to the CSV file
-    // outputFile << "Operation,Algorithm,Mapping,Size,Avg Latency(us),Min Latency(us),Max Latency(us),Iterations\n";
+    outputFile << "Operation,Algorithm,Mapping,Iterations,Warmup,Size,Avg Latency(us),Min Latency(us),Max Latency(us)\n";
 
     std::string line;
     std::string operation, algorithm, mapping;
