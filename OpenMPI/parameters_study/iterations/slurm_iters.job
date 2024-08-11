@@ -2,11 +2,11 @@
 
 #SBATCH --job-name=iterations_test
 #SBATCH --time=0-02:00:00
-#SBATCH -pTHIN
-#SBATCH -n48
+#SBATCH -pEPYC
+#SBATCH -n128
 #SBATCH --output=%x.%j.out
 #SBATCH --error=%x.%j.err
 #SBATCH -N2
 
 repetitions=$1
-./iters_warmup_variation.sh "THIN" 48 $repetitions
+./iters_warmup_variation.sh "EPYC" 128 $repetitions
