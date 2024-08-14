@@ -11,7 +11,7 @@ repetitions=$3
 ## these parameters will be generated randomly at each repetition:
 ## the idea is to find out if it is possible to study the impact of **total iterations** and **warmup iterations**
 ## on performances independently on the specific execution 
-OPERATIONS=("bcast" "scatter" "gather" "reduce" "barrier")
+OPERATIONS=("bcast" "scatter" "gather" "reduce")
 ALGS=(0 1 2 3)
 MAPPINGS=("core" "L3cache" "numa" "socket")
 
@@ -25,7 +25,7 @@ WARMUP=(200 1000)
 
 
 module purge
-module load openMPI/4.1.5/gnu
+module load openMPI/4.1.6/gnu
 cd ../../operations/
 
 # For-loop on the used algorithms
@@ -50,11 +50,13 @@ Mapping: $curr_mapping
     do
         for W in "${WARMUP[@]}" 
         do  
-            printf "\nIterations: $I    Warmup: $W"
-            printf "\nIterations: $I\nWarmup: $W" >> "test__${R}.txt"
-            mpirun -np $cpus --map-by $curr_mapping --mca coll_tuned_use_dynamic_rules true --mca coll_tuned_${curr_operation}_algorithm $curr_alg osu_${curr_operation} -m 128:524288 -f -i $I -x $W > "curr_results_{$R}.txt"
-            cat "curr_results_{$R}.txt" >> "test__${R}.txt"
-        done
+            if [ "$I" -eq "${ITERATIONS[0]}" ] || [ "$W" -eq "${WARMUP[0]}" ]; then
+		printf "\nIterations: $I    Warmup: $W"
+            	printf "\nIterations: $I\nWarmup: $W" >> "test__${R}.txt"
+            	mpirun -np $cpus --map-by $curr_mapping --mca coll_tuned_use_dynamic_rules true --mca coll_tuned_${curr_operation}_algorithm $curr_alg osu_${curr_operation} -m 256:524288 -f -z -i $I -x $W > "curr_results_{$R}.txt"
+            	cat "curr_results_{$R}.txt" >> "test__${R}.txt"
+            fi
+	done
     done
     printf "\n"
     rm curr_results_{$R}.txt
