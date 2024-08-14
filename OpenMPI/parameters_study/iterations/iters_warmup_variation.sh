@@ -24,8 +24,8 @@ ITERATIONS=(10000 50000)
 WARMUP=(200 1000)
 
 
-module purge
-module load openMPI/4.1.6/gnu
+# module purge
+# module load openMPI/4.1.6/gnu
 cd ../../operations/
 
 # For-loop on the used algorithms
@@ -51,7 +51,7 @@ Mapping: $curr_mapping
         for W in "${WARMUP[@]}" 
         do  
             if [ "$I" -eq "${ITERATIONS[0]}" ] || [ "$W" -eq "${WARMUP[0]}" ]; then
-		printf "\nIterations: $I    Warmup: $W"
+		        printf "\nIterations: $I    Warmup: $W"
             	printf "\nIterations: $I\nWarmup: $W" >> "test__${R}.txt"
             	mpirun -np $cpus --map-by $curr_mapping --mca coll_tuned_use_dynamic_rules true --mca coll_tuned_${curr_operation}_algorithm $curr_alg osu_${curr_operation} -m 256:524288 -f -z -i $I -x $W > "curr_results_{$R}.txt"
             	cat "curr_results_{$R}.txt" >> "test__${R}.txt"
