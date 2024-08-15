@@ -23,7 +23,7 @@ MAPPING=("core" "L3cache" "numa" "socket" "node")
 
 cd ../../operations/
 module purge
-module load openMPI/4.1.5/gnu
+module load openMPI/4.1.6/gnu
 
 
 # For-loop on the used algorithms
