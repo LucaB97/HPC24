@@ -8,5 +8,6 @@
 #SBATCH --error=%x.%j.err
 #SBATCH -N2
 
-repetitions=$1
-./mapping_variation.sh "THIN" 48 $repetitions
+./mapping_variation.sh "THIN" 48
+# repetitions=$1
+# ./mapping_variation.sh "THIN" 48 $repetitions
