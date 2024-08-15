@@ -51,7 +51,6 @@ Mapping: $curr_mapping
         for W in "${WARMUP[@]}" 
         do  
             if [ "$I" -eq "${ITERATIONS[0]}" ] || [ "$W" -eq "${WARMUP[0]}" ]; then
-		printf "Entered the IF"
 		printf "\nIterations: $I    Warmup: $W"
 		printf "\nIterations: $I\nWarmup: $W" >> "test__${R}.txt"
             	mpirun -np $cpus --map-by $curr_mapping --mca coll_tuned_use_dynamic_rules true --mca coll_tuned_${curr_operation}_algorithm $curr_alg osu_${curr_operation} -m 256:524288 -f -z -i $I -x $W > "curr_results_{$R}.txt"
