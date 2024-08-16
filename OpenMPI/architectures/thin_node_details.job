@@ -7,5 +7,6 @@
 #SBATCH --error=%x.%j.err
 #SBATCH -N1
 
-lstopo-no-graphics --no-io --no-legend --of txt > "thin_arch.txt"
+module load hwloc/2.10.0
+lstopo-no-graphics --no-io --no-legend --of txt > "thin_arch.png"
 lscpu > "thin_arch.txt"

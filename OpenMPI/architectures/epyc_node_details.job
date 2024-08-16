@@ -7,5 +7,6 @@
 #SBATCH --error=%x.%j.err
 #SBATCH -N1
 
+module load hwloc/2.10.0
 lstopo-no-graphics --no-io --no-legend --of txt > "epyc_arch.png"
 lscpu > "epyc_arch.txt"
