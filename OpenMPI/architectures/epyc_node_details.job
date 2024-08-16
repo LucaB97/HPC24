@@ -1,0 +1,11 @@
+#!/bin/bash
+
+#SBATCH --job-name=_
+#SBATCH --time=0-00:00:10
+#SBATCH -pEPYC
+#SBATCH --output=%x.%j.out
+#SBATCH --error=%x.%j.err
+#SBATCH -N1
+
+
+lscpu > "epyc_arch.txt"
