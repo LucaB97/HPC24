@@ -7,5 +7,5 @@
 #SBATCH --error=%x.%j.err
 #SBATCH -N1
 
-
+lstopo-no-graphics --no-io --no-legend --of txt > "thin_arch.txt"
 lscpu > "thin_arch.txt"
