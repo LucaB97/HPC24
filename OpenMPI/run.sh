@@ -54,6 +54,7 @@ printf "\n-------------------------------------------\n" >> "${OPERATION}_all_re
 ##rm summarize
 rm curr_results_${NODE}.txt
 rm tmp_results_${NODE}.txt
+rm summarize
 X=$(date +%m-%d--%H-%M)
 mkdir ../results/$OPERATION/$NODE/$X
 mv ${OPERATION}_all_results_${NODE}.txt ../results/$OPERATION/$NODE/$X/all.txt
