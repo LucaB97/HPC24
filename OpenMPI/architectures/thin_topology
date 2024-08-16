@@ -8,4 +8,4 @@
 #SBATCH -N1
 
 module load hwloc/2.10.0
-lstopo --no-io --no-default-legend thin.pdf
+lstopo --no-io --no-default-legend thin.svg
