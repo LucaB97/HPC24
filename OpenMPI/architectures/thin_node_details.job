@@ -8,5 +8,6 @@
 #SBATCH -N1
 
 module load hwloc/2.10.0
-lstopo-no-graphics --no-io --no-legend --of txt > "thin_arch.png"
-lscpu > "thin_arch.txt"
+lstopo --no-io --no-legend thin.svg
+# lstopo-no-graphics --no-io --no-legend --of txt > "thin_arch.png"
+lscpu > "thin.txt"
