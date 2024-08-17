@@ -11,7 +11,7 @@ k=$((k+1))
 i=$((i+1))
 done
 
-cd ../operations/
+cd ../OPERATIONS/
 module purge
 module load openMPI/4.1.6/gnu
 

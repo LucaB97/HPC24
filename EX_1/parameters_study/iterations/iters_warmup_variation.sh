@@ -60,6 +60,6 @@ Mapping: $curr_mapping
     done
     printf "\n"
     rm curr_results_{$R}.txt
-    mv "test__${R}.txt" ../parameters_study/iterations/tests/$X/
+    mv "test__${R}.txt" ../parameters_study/iterations/$X/
 done
 

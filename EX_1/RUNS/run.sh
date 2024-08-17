@@ -17,10 +17,10 @@ i=$((i+1))
 done
 
 c++ summarize.cpp -o summarize
-mv summarize operations/
-cd operations/
+mv summarize ../OPERATIONS/
+cd OPERATIONS/
 module purge
-module load openMPI/4.1.5/gnu
+module load openMPI/4.1.6/gnu
 
 
 # For-loop on the used algorithms
@@ -55,7 +55,8 @@ printf "\n-------------------------------------------\n" >> "${OPERATION}_all_re
 rm curr_results_${NODE}.txt
 rm tmp_results_${NODE}.txt
 rm summarize
+
 X=$(date +%m-%d--%H-%M)
-mkdir ../results/$OPERATION/$NODE/$X
-mv ${OPERATION}_all_results_${NODE}.txt ../results/$OPERATION/$NODE/$X/all.txt
-mv ${OPERATION}_summarized_results_${NODE}.csv ../results/$OPERATION/$NODE/$X/summarized.csv
+mkdir ../RUNS/results/$OPERATION/$NODE/$X
+mv ${OPERATION}_all_results_${NODE}.txt ../RUNS/results/$OPERATION/$NODE/$X/all.txt
+mv ${OPERATION}_summarized_results_${NODE}.csv ../RUNS/results/$OPERATION/$NODE/$X/summarized.csv

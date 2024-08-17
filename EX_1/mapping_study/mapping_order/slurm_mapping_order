@@ -8,9 +8,18 @@
 #SBATCH --error=%x.%j.err
 #SBATCH -N2
 
+module purge
+module load openMPI/4.1.6/gnu
+
+mpicc -o mapping_ranks_to_id mapping_ranks_to_id.c
+
+
 MAPPINGS=("core" "L3cache" "numa" "socket" "node")
 
 for M in "${MAPPINGS[@]}"
 do
     mpirun --map-by $M -np 48 ./mapping_ranks_to_id "$M_mapping"
 done
+
+
+rm mapping_ranks_to_id

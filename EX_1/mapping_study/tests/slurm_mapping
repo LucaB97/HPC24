@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #SBATCH --job-name=mapping_tests
-#SBATCH --time=0-00:20:00
+#SBATCH --time=0-00:10:00
 #SBATCH -pTHIN
 #SBATCH -n48
 #SBATCH --output=%x.%j.out
@@ -9,5 +9,3 @@
 #SBATCH -N2
 
 ./mapping_variation.sh "THIN" 48
-# repetitions=$1
-# ./mapping_variation.sh "THIN" 48 $repetitions

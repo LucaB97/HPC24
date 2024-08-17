@@ -21,7 +21,7 @@ ALGS=(0 2 5 6 7)
 ## ITERATION ON THESE VALUES
 MAPPING=("core" "L3cache" "numa" "socket" "node")
 
-cd ../../operations/
+cd ../../OPERATIONS/
 module purge
 module load openMPI/4.1.6/gnu
 
