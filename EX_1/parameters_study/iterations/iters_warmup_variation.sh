@@ -26,7 +26,7 @@ WARMUP=(200 1000)
 
 module purge
 module load openMPI/4.1.6/gnu
-cd ../../operations/
+cd ../../OPERATIONS/
 
 # For-loop on the used algorithms
 for R in $(seq 1 $repetitions)

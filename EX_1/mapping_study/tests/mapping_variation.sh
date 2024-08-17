@@ -1,7 +1,7 @@
 #/usr/bin/bash
 
 X=$(date +%m-%d--%H-%M)
-mkdir tests/$X
+mkdir $X
 
 ##get info for the execution
 node=$1
@@ -35,7 +35,7 @@ do
         mpirun -np $cpus --map-by $M --mca coll_tuned_use_dynamic_rules true --mca coll_tuned_${OPERATION}_algorithm $A osu_${OPERATION} -f -z > "curr_results.txt"
         cat "curr_results.txt" >> "bcast__${A}.txt"
     done
-    mv "bcast__${A}.txt" ../parameters_study/mapping/tests/$X/
+    mv "bcast__${A}.txt" ../mapping_study/tests/$X/
 done
 
 rm curr_results.txt
