@@ -7,5 +7,6 @@
 #SBATCH --error=%x.%j.err
 #SBATCH -N1
 
-module load hwloc/2.10.0
-lstopo --no-io --no-default-legend thin.svg
+# module load hwloc/2.10.0
+# lstopo --no-io --no-default-legend thin.svg
+lscpu > "thin.txt"

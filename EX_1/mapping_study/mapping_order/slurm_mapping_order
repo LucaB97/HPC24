@@ -2,24 +2,39 @@
 
 #SBATCH --job-name=_
 #SBATCH --time=0-00:05:00
-#SBATCH -pTHIN
-#SBATCH -n48
+#SBATCH -p THIN
+#SBATCH -n 48
 #SBATCH --output=%x.%j.out
 #SBATCH --error=%x.%j.err
-#SBATCH -N2
+#SBATCH -N 2
 
 module purge
 module load openMPI/4.1.6/gnu
 
+# Compile the program
 mpicc -o mapping_ranks_to_id mapping_ranks_to_id.c
 
+# Array of mappings
+# MAPPINGS=("core" "L3cache" "numa" "socket" "node")
+MAPPINGS=("core" "node")
 
-MAPPINGS=("core" "L3cache" "numa" "socket" "node")
-
+# Loop through each mapping and run the program
 for M in "${MAPPINGS[@]}"
 do
-    mpirun --map-by $M -np 48 ./mapping_ranks_to_id "$M_mapping"
+    # Construct the output filename with a .csv extension
+    OUTPUT_FILE="${M}_mapping.csv"
+    
+    # Run the MPI program with the specified mapping
+    mpirun --map-by $M -np 48 ./mapping_ranks_to_id "$OUTPUT_FILE"
+    
+    # Check if the file was created
+    if [ -f "$OUTPUT_FILE" ]; then
+        echo "Successfully created $OUTPUT_FILE"
+    else
+        echo "Failed to create $OUTPUT_FILE"
+    fi
 done
 
-
+# Clean up
 rm mapping_ranks_to_id
+mv *csv csv_files/
