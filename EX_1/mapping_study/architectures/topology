@@ -8,7 +8,10 @@
 #SBATCH -N1
 
 module load hwloc/2.10.0
-lstopo --no-default-legend thin.pdf
+# lstopo --no-default-legend thin.pdf
 # lscpu > "thin.txt"
-magick thin.svg thin.png
-rm thin.svg
+# magick thin.svg thin.png
+# rm thin.svg
+
+lstopo-no-graphics --no-io --no-legend --of txt > "thin_topology.txt"
+lscpu > "thin.txt"
