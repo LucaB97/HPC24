@@ -16,7 +16,7 @@ mpicc -o mapping_ranks_to_id mapping_ranks_to_id.c
 
 # Array of mappings
 # MAPPINGS=("core" "L3cache" "numa" "socket" "node")
-MAPPINGS=("core" "node")
+MAPPINGS=("core" "L3cache" "numa" "socket" "node")
 
 # Loop through each mapping and run the program
 for M in "${MAPPINGS[@]}"
