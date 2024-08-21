@@ -12,53 +12,43 @@ void createCSV(const std::string& inputFileName, const std::string& outputFileNa
         return;
     }
 
+    // Extract operation and algorithm from the input file name
+    std::string operation, algorithm;
+    std::size_t underscorePos = inputFileName.find("__");
+    std::size_t dotPos = inputFileName.find(".txt");
+
+    if (underscorePos != std::string::npos && dotPos != std::string::npos) {
+        operation = inputFileName.substr(0, underscorePos);
+        algorithm = inputFileName.substr(underscorePos + 2, dotPos - underscorePos - 2);
+    }
+
     // Write the header to the CSV file
-    outputFile << "Operation,Algorithm,Mapping,Iterations,Warmup,Size,Avg Latency(us),Min Latency(us),Max Latency(us)\n";
+    outputFile << "Operation,Algorithm,Mapping,Size,Avg Latency(us)\n";
 
     std::string line;
-    std::string operation, algorithm, mapping;
-    int iterations, warmup;
+    std::string mapping;
     bool parsingData = false;
 
     while (std::getline(inputFile, line)) {
         std::istringstream iss(line);
 
-        // Read Operation, Algorithm, and Mapping from the file
-        if (line.find("Operation:") != std::string::npos) {
-            parsingData = false;
-            iss.ignore(10);
-            iss >> operation;
-        }
-        if (line.find("Algorithm:") != std::string::npos) {
-            iss.ignore(11);
-            iss >> algorithm;
-        }
-        if (line.find("Mapping:") != std::string::npos) {
-            iss.ignore(9);
-            iss >> mapping;
-        }
-        // Read Iterations and Warmup (not directly used in the CSV output but to control the loop)
-        if (line.find("Iterations:") != std::string::npos) {
+        // Detect when data starts by looking for lines starting with a digit
+        if (std::isdigit(line[0])) {
             parsingData = true;
-            iss.ignore(11);
-            iss >> iterations;
-        }
-        if (line.find("Warmup:") != std::string::npos) {
-            iss.ignore(8);
-            iss >> warmup;
-        }
-
-        // Parse and write latency data to the CSV file
-        if (parsingData && std::isdigit(line[0])) {
             int size;
-            float avgLatency, minLatency, maxLatency;
-            // int iters;
+            float avgLatency;
 
-            iss >> size >> avgLatency >> minLatency >> maxLatency;
+            iss >> size >> avgLatency;
 
-            outputFile << operation << ',' << algorithm << ',' << mapping << ','
-                       << iterations << ',' << warmup << ','
-                       << size << ',' << avgLatency << ',' << minLatency << ',' << maxLatency <<'\n';
+            outputFile << operation << ','
+                       << algorithm << ','
+                       << mapping << ','
+                       << size << ',' << avgLatency << '\n';
+        } 
+        else if (line.find("Mapping:") != std::string::npos) {
+            // Extract the Mapping from the file
+            iss.ignore(9); // Skip the "Mapping: " part
+            iss >> mapping;
         }
     }
 
@@ -66,8 +56,6 @@ void createCSV(const std::string& inputFileName, const std::string& outputFileNa
     outputFile.close();
     // std::cout << "CSV file created successfully!" << std::endl;
 }
-
-
 
 int main(int argc, char** argv) {
     if (argc < 3) {
