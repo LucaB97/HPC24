@@ -7,45 +7,121 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+
+<style>body {text-align: justify}</style>
+
 The requirements for this exercise are described [here](https://github.com/Foundations-of-HPC/High-Performance-Computing-2023/blob/main/ASSIGNMENTS/exercise1/exercise1.md).\
-In summary, the assignment consists of the the evaluation of different algorithms to perform collective operations in a cluster nodes.
-The experiments are carried out using the [OSU benchmarks](https://mvapich.cse.ohio-state.edu/benchmarks/) for MPI operations.\
+In summary, the assignment consists of the evaluation and comparison of different algorithms to perform collective communication operations among the nodes of a HPC infrastructure.
+The experiments are carried out on [ORFEO](https://orfeo-doc.areasciencepark.it/HPC/computational-resources/) using the [OSU benchmarks](https://mvapich.cse.ohio-state.edu/benchmarks/) for MPI operations.\
 
 The software stack used in the project is :...  
 \
 \
 Here is a summary of the contents of this report.\
-• **Section 1** is about the benchmark functions and their parameters.\
-• **Section 2** evaluates the choice of the mapping strategy.\
-• **Section 3** specifies which operations and algorithms have been considered and describes their functioning from a theoretical point of view.\
+• **Section 1** specifies which operations and algorithms have been considered and describes their functioning from a theoretical point of view.\
+• **Section 2** is about the benchmark functions and their parameters.\
+• **Section 3** evaluates the choice of the mapping strategy.\
 • **Section 4** presents the results and compares the different algorithms' performances.\
 
 ## Section 1
-The OSU benchmarks include a wide range of communication operations in different programming languages.\
-The focus here is on host-based **blocking collective MPI benchmarks** in C.\
-As an example, a function call for the *broadcast* operation is:\
-`$mpirun --mca coll_tuned_use_dynamic_rules true --mca coll_tuned_bcast_algorithm 0 osu_bcast`,\
-where `osu_bcast` is the file which implements the broadcast operation and `--mca coll_tuned_bcast_algorithm 0` specifies the choice of a specific algorithm.\
+The OSU benchmarks include a wide range of communication operations in different programming languages. In the context of this assignment, the focus is on blocking collective MPI benchmarks in C.\
+Specifically, the experiments will cover `MPI_Bcast` and `MPI_Scatter`.\
+
+In the broadcast operation, a process called *root* sends a message with the same data to all processes in the communicator.\
+One can execute: `$mpirun -np N osu_bcast`, where `N` is the number of processes and `osu_bcast` is the file which implements OSU benchmark function for the broadcast operation.
+The latency of the communication algorithm is evaluated with different message sizes.\ 
 The output looks like this:\
-![image](C:/Users/lucab/Desktop/Immagini HPC/osu_bcast_basic_output.png)\ \
-One can retrieve the list of available algorithms (e.g.: `$ompi_info --param coll tuned --level 5 | grep "bcast"`).\
-Conveniently, the OSU benchmark functions allow the setting of some parameters by the users.\
-The parameter list is accessible through `$mpirun osu_bcast --help`:\
-![image](C:/Users/lucab/Desktop/Immagini HPC/osu_help.png)
-One should notice that the parameter lists may differ depending on the collective operations considered.\
-A simple investigation, involving the parameters *i* (number of iteration for timing) and *w* (set number of warmup iterations to skip before timing), has been carried out to verify whether setting values different from the default ones would affect the results.\
-A set of 10 experiments were performed, with a random selection of the operation, the algorithm and the mapping strategy. 
-For each setting, the corresponding benchmark function was executed with every combination of values of `i={10000,50000}` and `w={200,1000}`.\
-**insert graphs here**\
-As one can notice from the graphs (the complete data is also included in the repository), modifying the values of these parameters does not yield consistent variations in the results, at least in the considered experiments.
-Thus, from this point on, any further experiment will use the parameters with their default values. 
+<figure align="center">
+  <img src="C:/Users/lucab/Desktop/Immagini HPC/osu_bcast_basic_output.png" />
+</figure>
+\
+Different topologies (i.e., communication graphs) between the processes in the communicator can be selected: each of them is implemented by a specific algorithm.
+The list of the algorithms implemented in the OSU benchmarks can be retrieved with: `$ompi_info --param coll tuned --level 5 | grep "Which bcast algorithm is used"`.\
+Here, the experiments will use the default algorithm as a baseline to evaluate the performance of other algorithms: `chain tree`, `binary tree` and `k-nomial tree`.\
+
+<figure align="center">
+    <img src="C:/Users/lucab/Desktop/Immagini HPC/topologies.jpg"/>
+    <figcaption>Topologies of the chosen algorithms.</figcaption>
+</figure>
+
+In the `scatter` operation, the root distributes the data by assigning a segment of it to each process in the communicator (i.e., the `i`-th segment is sent to the `i`-th process in the group).\ 
 
 ## Section 2
+Conveniently, the OSU benchmark functions allow the setting of some parameters by the users.\
+The parameters list is accessible through `$mpirun osu_bcast --help`:\
+![image](C:/Users/lucab/Desktop/Immagini HPC/osu_help.png)
+The parameters lists may differ depending on the collective operations considered.\
+A simple investigation, involving the parameters `i` (number of iterations for timing) and `w` (set number of warmup iterations to skip before timing), has been carried out to verify whether setting values different from the default ones would affect the results.\
+A set of 10 experiments were performed, with a random selection of the operation, the algorithm and the mapping strategy. 
+For each setting, the corresponding benchmark function was executed with `i={10000,50000}` and `w={200,1000}`.\
+**insert graphs here**\
+The complete data is available in the repository.\
+The graphs show that, at least for the selected parameters values, increasing the number of iterations for timing and the number of warmup iterations does not yield consistent variations in the results.
+Thus, from this point on, any further experiment will use the parameters with their default values.\ 
+
+## Section 3
 The way the processes are mapped to the computational resources is a crucial factor for the performance of the algorithms.\
-In this section, we show some examples of this in the context of our experiment.\
-**image: architecture of thin node**\
-**image/table: mapping ranks to IDs**\
-As expected, mapping by core fills all the CPUs in a certain NUMA region before starting filling the next NUMA, then moves to the next node; mapping by L3cache, socket and NUMA coincide in this specific architecture (since each node has exactly 2 sockets, 2 NUMA regions and 2 L3caches), in fact they alternatively assign processes to different sockets of a node, before starting the same procedure on the next one; mapping by node, finally, maps one process to each node and start over until all the processes have been assigned. 
+As pointed out in the [OpenMPI documentation](https://docs.open-mpi.org/en/v5.0.x/man-openmpi/man1/mpirun.1.html), `mpirun` automatically binds processes to `core` if 
+the number of processes is `<=2` and to `package` otherwise, or to `none` when the binding pattern is oversubscribed.\
+
+In this section, some experiments are presented where the mapping strategy is explicitly defined for each execution. The goal is to determine if the mapping affects the communication latencies in a significant way.\
+<figure align="center">
+    <img src="C:/Users/lucab/Desktop/Immagini HPC/architecture.png"/>
+    <figcaption>Architecture of a `thin` node, like the ones used for the experiments.</figcaption>
+</figure>\
+
+For this specific architecture, mapping by L3cache, by socket and by NUMA coincide, since each node has exactly 2 sockets, 2 NUMA regions and 2 L3caches.\
+<!-- <figure align="center">
+    <img src="C:/Users/lucab/Desktop/Immagini HPC/topologies.jpg"/>
+    <figcaption> Mapping ranks to processes. with `--map-by=core`, all the CPUs in a certain NUMA region are filled before moving to the next NUMA, then to the next node; 
+`--map-by=L3cache`, `--map-by=socket` and `--map-by=NUMA` coincide in this specific architecture (since each node has exactly 2 sockets, 2 NUMA regions and 2 L3caches), in fact they alternatively assign processes to different sockets of a node, before repeating the procedure on the next one; 
+`--map-by=node`, finally, maps one process to each node and start over until all the processes have been assigned.</figcaption>
+</figure> -->
+
+<!-- <figure align="center">
+  <img src="C:/Users/lucab/Desktop/Immagini HPC/core.png" width="18%" />
+  <img src="C:/Users/lucab/Desktop/Immagini HPC/core.png" width="18%" />
+  <img src="C:/Users/lucab/Desktop/Immagini HPC/core.png" width="18%" />
+  <img src="C:/Users/lucab/Desktop/Immagini HPC/core.png" width="18%" />
+  <img src="C:/Users/lucab/Desktop/Immagini HPC/core.png" width="18%" />
+  <figcaption> Mapping ranks to processes.</figcaption>
+</figure> -->
+
+
+<figure align="center">
+  <span style="display: inline-block; text-align: center; width: 19%; margin-right: 0.5%;">
+    <img src="C:/Users/lucab/Desktop/Immagini HPC/core.png" width="100%" /><br />
+    <span>(a) core</span>
+  </span>
+  <span style="display: inline-block; text-align: center; width: 19%; margin-right: 0.5%;">
+    <img src="C:/Users/lucab/Desktop/Immagini HPC/L3cache.png" width="100%" /><br />
+    <span>(b) L3cache</span>
+  </span>
+  <span style="display: inline-block; text-align: center; width: 19%; margin-right: 0.5%;">
+    <img src="C:/Users/lucab/Desktop/Immagini HPC/NUMA.png" width="100%" /><br />
+    <span>(c) NUMA</span>
+  </span>
+  <span style="display: inline-block; text-align: center; width: 19%; margin-right: 0.5%;">
+    <img src="C:/Users/lucab/Desktop/Immagini HPC/socket.png" width="100%" /><br />
+    <span>(d) socket</span>
+  </span>
+  <span style="display: inline-block; text-align: center; width: 19%;">
+    <img src="C:/Users/lucab/Desktop/Immagini HPC/node.png" width="100%" /><br />
+    <span>(e) node</span>
+  </span>
+  <figcaption style="text-align: center; margin: 0; padding: 0;">
+  Mapping ranks to processes:<br />
+  <span style="text-align: left; display: block; margin-left: 0;">
+    • `--map-by=core`: all the CPUs in a NUMA region are filled before moving to the next NUMA, then to the next node;<br />
+    • `--map-by=L3cache`, `--map-by=socket`, and `--map-by=NUMA`: alternatively assign processes to different regions of a node, before repeating the procedure on the next node;<br />
+    • `--map-by=node`: maps one process to each node and starts over until all the processes have been assigned.
+  </span>
+  </figcaption>
+</figure>
+
+
+\
+
 As mentioned in [this](https://www.sciencedirect.com/science/article/pii/S0743731522000697?via%3Dihub) paper, at each step the time of communication is dominated by the longest communication. Most likely, the transmission of a message between nodes through a network channel take the longest; inside of a node, communications between CPUs in different NUMA regions takes longer than those in the same region.\
 **image: latencies for point-to-point communication between the cores of the node**\
 Different algorithms for a collective operation (e.g. broadcast) create different topologies, and the mapping strategy can actually impact the total communication time for a certain algorithm by affecting the point-to-point communications among CPUs.\
@@ -56,10 +132,5 @@ Then, specific observations can be done for each individual algorithm:\
 - chain-tree algorithm: mapping by node increases the number of transmissions through the network channels, leading to higher communication times than the other mappings, for which only one inter-node communication is required (after all the first node has been filled).\
 - knomial algorithm: again, mapping by node requires several communications through the network, while for the other mapping strategies the number of inter-node communications is bounded by *k* (they can happen either in the middle of a chain or in the communication from the root to the top of a chain).\
 - binary-tree and binomial tree: here, the node mapping outperforms the others for big messages. The number of inter-node communications is the same for all the mapping strategies, but when mapping by node communication between nodes happens earlier in the broadcast process. The different results might be due to internal communication delays in each node due to resource contention among the processes, for the mappings where the inter-node communications occur just on the bottom of the tree.\
-
-
-
-
-## Section 3
 
 ## Section 4
