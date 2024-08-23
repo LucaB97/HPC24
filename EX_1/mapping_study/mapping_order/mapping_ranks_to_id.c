@@ -66,9 +66,13 @@ int main(int argc, char *argv[]) {
             MPI_Abort(MPI_COMM_WORLD, 1);
         }
 
-        fprintf(file, "Rank,Core_ID,NUMA_ID,Node_ID\n");
+        // fprintf(file, "Rank,Core_ID,NUMA_ID,Node_ID\n");
+        // for (int i = 0; i < size; i++) {
+        //     fprintf(file, "%d,%d,%d,%d\n", i, core_ids[i], numa_ids[i], node_ids[i]);
+        // }
+        fprintf(file, "Rank\tCore\tNUMA\tNode\n");
         for (int i = 0; i < size; i++) {
-            fprintf(file, "%d,%d,%d,%d\n", i, core_ids[i], numa_ids[i], node_ids[i]);
+            fprintf(file, "%d\t%d\t%d\t%d\n", i, core_ids[i], numa_ids[i], node_ids[i]);
         }
 
         fclose(file);
