@@ -53,7 +53,6 @@ do
     done
 done
 
-##rm summarize
 rm curr_results.txt
 python3 summary.py ${OPERATION}__all.txt ${OPERATION}__summarized.csv
 rm summary.py

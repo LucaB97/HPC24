@@ -11,4 +11,4 @@
 repetitions=$1
 operation=$2
 algorithms=("${@:3}")
-./run.sh "thin" 48 $repetitions $operation $algorithms
+./run.sh "thin" 48 $repetitions $operation ${algorithms[@]}
