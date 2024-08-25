@@ -44,6 +44,5 @@ done
 
 rm curr__${OPERATION}_${ALG}.txt
 python3 summary.py ${OPERATION}__${ALG}.txt ${OPERATION}__${ALG}__summarized.csv
-rm summary.py
 mv ${OPERATION}__${ALG}.txt ../RUNS/results/$NODE/$OPERATION/alg__$ALG/all.txt
 mv ${OPERATION}__${ALG}__summarized.csv ../RUNS/results/$NODE/$OPERATION/alg__$ALG/summarized.csv
