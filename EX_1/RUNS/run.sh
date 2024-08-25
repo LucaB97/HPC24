@@ -5,10 +5,7 @@ NODE=$1
 CPUS=$2
 REPETITIONS=$3
 OPERATION=$4
-ALGS=("${@:5}")
-
-X=$(date +%m-%d--%H-%M)
-mkdir results/$NODE/$X
+ALG=$5
 
 ##create array of values for number of processes (np) for mpirun
 k=2
@@ -19,42 +16,34 @@ k=$((k+2))
 i=$((i+1))
 done
 
+mkdir results/$NODE/$OPERATION/alg__$ALG
 cp summary.py ../OPERATIONS/
 cd ../OPERATIONS/
 module purge
 module load openMPI/4.1.6/gnu
 
 
-# For-loop on the used algorithms
-for A in "${ALGS[@]}"
-do
-    printf "\n\n\n--------------------------------------------\nAlgorithm: $A
+printf "\n\n\n--------------------------------------------\nAlgorithm: $ALG
 --------------------------------------------\n" >> "${OPERATION}__all.txt"
-    printf "\nAlgorithm: $A\n" >> "${OPERATION}__${A}.txt"
+printf "\nAlgorithm: $ALG\n" >> "${OPERATION}__${ALG}.txt"
 
-    # For-loop on the number of processes
-    for P in "${num_procs[@]}"
-    do        
-        printf "\n\nProcs: $P\n" >> "${OPERATION}__all.txt"
-        printf "\nProcs: $P\n" >> "${OPERATION}__${A}.txt"        
+# For-loop on the number of processes
+for P in "${num_procs[@]}"
+do        
+    printf "\n\nProcs: $P\n" >> "${OPERATION}__all.txt"
+    printf "\nProcs: $P\n" >> "${OPERATION}__${ALG}.txt"        
 
-        # Running some repetitions for each parameter configuration
-        for R in $(seq 1 $REPETITIONS)
-        do
-            printf "\nTest: $R" >> "${OPERATION}__all.txt"
-            printf "\nTest: $R" >> "${OPERATION}__${A}.txt"
-            mpirun -np $P --mca coll_tuned_use_dynamic_rules true --mca coll_tuned_${OPERATION}_algorithm $A osu_${OPERATION} -f -z > "curr_results.txt"
-            cat "curr_results.txt" >> "${OPERATION}__${A}.txt"
-            cat "curr_results.txt" >> "${OPERATION}__all.txt"
-        done
-        
-	# Summarize the data of each parameter configuration (compute mean and standard deviation of latency measures)
-        mv ${OPERATION}__${A}.txt ../RUNS/results/$NODE/$X/
+    # Running some repetitions for each parameter configuration
+    for R in $(seq 1 $REPETITIONS)
+    do
+        printf "\nTest: $R" >> "${OPERATION}__${ALG}.txt"
+        mpirun -np $P --mca coll_tuned_use_dynamic_rules true --mca coll_tuned_${OPERATION}_algorithm $ALG osu_${OPERATION} -f -z > "curr__${OPERATION}_${ALG}.txt"
+        cat "curr__${OPERATION}_${ALG}.txt" >> "${OPERATION}__${ALG}.txt"
     done
 done
 
-rm curr_results.txt
-python3 summary.py ${OPERATION}__all.txt ${OPERATION}__summarized.csv
+rm curr__${OPERATION}_${ALG}.txt
+python3 summary.py ${OPERATION}__${ALG}.txt ${OPERATION}__${ALG}__summarized.csv
 rm summary.py
-mv ${OPERATION}__all.txt ../RUNS/results/$NODE/$X/
-mv ${OPERATION}__summarized.csv ../RUNS/results/$NODE/$X/
+mv ${OPERATION}__${ALG}.txt ../RUNS/results/$NODE/$OPERATION/alg__$ALG/all.txt
+mv ${OPERATION}__${ALG}__summarized.csv ../RUNS/results/$NODE/$OPERATION/alg__$ALG/summarized.csv
