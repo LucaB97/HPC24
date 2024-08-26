@@ -1,5 +1,0 @@
-#!/bin/bash
-
-job=$1
-
-sacct -j $job
