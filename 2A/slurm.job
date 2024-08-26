@@ -8,5 +8,5 @@
 #SBATCH --error=%x%j.err
 #SBATCH -N1
 
-./strong_scal.sh 24 10000000 2
-./weak_scal.sh 24 10000000 2
+./strong_scal.sh 4 10000000 2
+./weak_scal.sh 4 10000000 2

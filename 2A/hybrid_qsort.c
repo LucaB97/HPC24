@@ -185,7 +185,7 @@ int main ( int argc, char **argv )
     double end_time = MPI_Wtime();
     
     if ( verify_sorting( data, 0, N, 0) ) {
-      printf("Size\tN\t\tTotal time\tCommunication\tSorting\t\tMerging\n");
+      // printf("Size\tN\t\tTotal time\tCommunication\tSorting\t\tMerging\n");
       printf("%d\t%d\t\t%g\t0.000000\t%g\t0.000000\n", size, N, end_time-init_time, end_time-init_time);
     } 
     else
@@ -270,7 +270,7 @@ int main ( int argc, char **argv )
     if ( verify_sorting( mydata, 0, N, 0) ) {
       //printf("-------------------------\n-------------------------\nSorted array:\n");
       //show_array(mydata, 0, own_chunk_size, 0);
-      printf("Size\tN\t\tTotal time\tCommunication\tSorting\t\tMerging\n");
+      // printf("Size\tN\t\tTotal time\tCommunication\tSorting\t\tMerging\n");
       printf("%d\t%d\t\t%g\t%g\t%g\t%g\n", size, N, end_time-init_time, scatter_time-init_time, sorting_time-scatter_time , end_time-sorting_time);
     } 
     else
