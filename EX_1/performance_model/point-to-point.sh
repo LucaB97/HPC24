@@ -26,4 +26,7 @@ do
 done
 
 rm temp.txt
-mv *txt ../performance_model/
+mv "latencies_$MESSAGE_SIZE.txt" ../performance_model/
+cd ../performance_model/
+python3 edit_file.py "latencies_$MESSAGE_SIZE.txt"
+

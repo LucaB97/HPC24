@@ -34,7 +34,7 @@ def create_graphs(input_file):
         # Set plot title and labels
         plt.xlabel('Message Size (Bytes)')
         plt.ylabel('Average Latency (us)')
-        plt.title(f'Algorithm {algo}')
+        # plt.title(f'Algorithm {algo}')
         # plt.title(f'Latency Comparison for Algorithm {algo}')
         plt.legend(title='Mapping')
         plt.grid(True, which="both", linestyle='--')
