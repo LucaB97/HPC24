@@ -26,11 +26,11 @@ for P in "${NUMPROCS[@]}"
 do
     for R in $(seq 1 $REPETITIONS)
     do
-        printf "$R\t\t" >> "strong.txt"
+        printf "$R\t" >> "strong.txt"
         mpirun -np $P ./qsort $SIZE >> "strong.txt"
     done
 done
 
 mv strong.txt results/
-# module purge
+module purge
 rm qsort

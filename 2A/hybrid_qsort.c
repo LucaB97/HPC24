@@ -130,7 +130,12 @@ int main ( int argc, char **argv )
     double end_time = MPI_Wtime();
     
     if ( verify_sorting( data, 0, N, 0) ) {
-      printf("%d\t%d\t%g\t0.000000\t%g\t0.000000\n", size, N, end_time-init_time, end_time-init_time);
+      printf("%d\t\t%d", size, N);
+      if (N >= 10000000)
+        printf("\t");
+      else
+        printf("\t\t");
+      printf("%.6f\t0.000000\t%.6f\t0.000000\n", end_time-init_time, end_time-init_time);
     } 
     else
       printf("the array is not sorted correctly\n");
@@ -211,7 +216,12 @@ int main ( int argc, char **argv )
   //Correctness check and time printing
   if (rank == 0) {
     if ( verify_sorting( mydata, 0, N, 0) ) {
-      printf("%d\t%d\t%g\t%g\t%g\t%g\n", size, N, end_time-init_time, scatter_time-init_time, sorting_time-scatter_time , end_time-sorting_time);
+      printf("%d\t\t%d", size, N);
+      if (N >= 10000000)
+        printf("\t");
+      else
+        printf("\t\t");
+      printf("%.6f\t%.6f\t%.6f\t%.6f\n", end_time-init_time, scatter_time-init_time, sorting_time-scatter_time , end_time-sorting_time);
     } 
     else
       printf("the array is not sorted correctly\n");
