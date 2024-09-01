@@ -1,0 +1,19 @@
+Areas for Improvement:
+
+1) Pivot Selection:
+In the partitioning function, the pivot selection could be improved. Currently, you're using the last element as the pivot, 
+which can lead to poor performance if the data is already sorted or nearly sorted. Consider using the "median of three" strategy 
+(median of the first, middle, and last elements) to improve partitioning.
+
+2) Memory Management:
+The merge function could potentially cause memory issues due to multiple malloc and realloc calls. 
+Ensure that the system has enough memory for these operations, especially for large datasets. 
+Additionally, consider checking if realloc fails, as you've done, but also handle the situation more gracefully.
+
+3) Edge Cases:
+Consider handling edge cases explicitly, such as when N is very small or when the number of processes exceeds N. 
+Although these might be rare in practice, it's good to have safeguards.
+
+4) Verbose Output:
+The VERBOSE and DEBUG macros are useful for debugging, but ensure that they don't overwhelm the output during normal execution.
+ You might want to include an option to control the verbosity level dynamically.

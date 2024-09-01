@@ -1,17 +1,18 @@
 #!/bin/bash
 
-CPUS=$1
-SIZE=$2
-REPETITIONS=$3
+# CPUS=$1
+SIZE=$1
+REPETITIONS=$2
 
 ##create array of values for number of processes (np) for mpirun
-k=1
-i=0
-while [[ $k -le $CPUS ]] ; do
-NUMPROCS[$i]=$k
-k=$((2*k))
-i=$((i+1))
-done
+# k=1
+# i=0
+# while [[ $k -le $CPUS ]] ; do
+# NUMPROCS[$i]=$k
+# k=$((2*k))
+# i=$((i+1))
+# done
+NUMPROCS=(1 2 4 8 16 32 64 128 256)
 
 ##load modules & create executable for the algorithm
 # module purge
