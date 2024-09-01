@@ -15,8 +15,8 @@ REPETITIONS=$2
 NUMPROCS=(1 2 4 8 16 32 64 128 256)
 
 ##load modules & create executable for the algorithm
-# module purge
-# module load openMPI/4.1.6/gnu
+module purge
+module load openMPI/4.1.6/gnu
 mpicc -O3 hybrid_qsort.c -o qsort
 
 ##perform strong scalability test
