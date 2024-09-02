@@ -1,0 +1,8 @@
+--------------------------------------------------------------------------
+Primary job  terminated normally, but 1 process returned
+a non-zero exit code. Per user-direction, the job has been aborted.
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+mpirun noticed that process rank 56 with PID 2678549 on node epyc007 exited on signal 9 (Killed).
+--------------------------------------------------------------------------
+slurmstepd: error: Detected 2 oom_kill events in StepId=794812.batch. Some of the step tasks have been OOM Killed.

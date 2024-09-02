@@ -12,8 +12,8 @@ REPETITIONS=$2
 # k=$((2*k))
 # i=$((i+1))
 # done
-NUMPROCS=(1 2 4 8 16 32 64 128 256)
-
+#NUMPROCS=(1 2 4 8 16 32 64 128 256)
+NUMPROCS=64
 ##load modules & create executable for the algorithm
 module purge
 module load openMPI/4.1.6/gnu
