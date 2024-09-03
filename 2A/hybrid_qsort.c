@@ -157,6 +157,7 @@ int main ( int argc, char **argv )
 
   //Data generation and distribution
   if (rank==0) {    
+    printf("Generation started, N=%d\n", N);
     data_t *data = (data_t*)malloc(N*sizeof(data_t));
     if (data == NULL) {
         // Handle memory allocation failure (e.g., log error, exit, etc.)
@@ -176,6 +177,7 @@ int main ( int argc, char **argv )
         displs[i] = i*(N/size) + min(i, N%size);
       }
     }    
+    printf("Distribution started\n");
     MPI_Scatterv(data, sendcounts, displs, mpi_data_type, mydata, N, mpi_data_type, 0, MPI_COMM_WORLD);
     free(data);
     scatter_time = MPI_Wtime();
@@ -185,29 +187,50 @@ int main ( int argc, char **argv )
   }
   
   //Sorting
+  if (rank == 0) {
+    printf("Sorting started\n");
+  }
   quicksort(mydata, 0, myN, compare_ge);
   MPI_Barrier(MPI_COMM_WORLD);
   sorting_time = MPI_Wtime();
 
   //Merging
+  if (rank == 0) {
+    printf("Merging started\n");
+  }
   int own_chunk_size = myN;
   for (int step = 1; step < size; step = 2 * step) {
+    
+    if (step > 1) {
+      if (rank % step != 0) {
+        free(mydata);
+	break;
+      }
+    }
+    
     if (rank % (2 * step) != 0) {
       MPI_Send(&own_chunk_size, 1, MPI_INT, rank-step, 0, MPI_COMM_WORLD);
       MPI_Send(mydata, own_chunk_size, mpi_data_type, rank-step, 1, MPI_COMM_WORLD);
-      break;
+      //free(mydata);
+      //break;
     }
  
     if (rank + step < size) {
       int received_chunk_size;
       MPI_Recv(&received_chunk_size, 1, MPI_INT, rank+step, 0, MPI_COMM_WORLD, &status);
       data_t * chunk_received = (data_t *)malloc(received_chunk_size * sizeof(data_t));
+      if (chunk_received == NULL) {
+        //Handle memory allocation failure (e.g., log error, exit, etc.)
+	fprintf(stderr, "Error: Unable to allocate memory to receive data on rank %d.\n", rank+step);
+	MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+      }
       MPI_Recv(chunk_received, received_chunk_size, mpi_data_type, rank+step, 1, MPI_COMM_WORLD, &status);
       
       merge(&mydata, own_chunk_size, chunk_received, received_chunk_size);
       free(chunk_received);
       own_chunk_size = own_chunk_size + received_chunk_size;
     }
+    MPI_Barrier(MPI_COMM_WORLD);
   }
   
   MPI_Barrier(MPI_COMM_WORLD);
