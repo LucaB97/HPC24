@@ -191,7 +191,6 @@ int main(int argc, char **argv) {
         rawtime = tv.tv_sec;     // Extract the seconds part
         timeinfo = localtime(&rawtime); // Convert to local time
         strftime(buffer, sizeof(buffer), "%a %b %e %T", timeinfo); // Format the date and time
-        char time_with_ms[100];
         snprintf(time_with_ms, sizeof(time_with_ms), "%s.%06ld %Z %Y:", buffer, tv.tv_usec); // Append microseconds
 
         file = fopen("steps.log", "a");
@@ -207,7 +206,6 @@ int main(int argc, char **argv) {
         rawtime = tv.tv_sec;     // Extract the seconds part
         timeinfo = localtime(&rawtime); // Convert to local time
         strftime(buffer, sizeof(buffer), "%a %b %e %T", timeinfo); // Format the date and time
-        char time_with_ms[100];
         snprintf(time_with_ms, sizeof(time_with_ms), "%s.%06ld %Z %Y:", buffer, tv.tv_usec); // Append microseconds
 
         fprintf(file, "Generation ended at: %s\n", buffer);
@@ -229,7 +227,6 @@ int main(int argc, char **argv) {
         rawtime = tv.tv_sec;     // Extract the seconds part
         timeinfo = localtime(&rawtime); // Convert to local time
         strftime(buffer, sizeof(buffer), "%a %b %e %T", timeinfo); // Format the date and time
-        char time_with_ms[100];
         snprintf(time_with_ms, sizeof(time_with_ms), "%s.%06ld %Z %Y:", buffer, tv.tv_usec); // Append microseconds
 
         file = fopen("steps.log", "a");
@@ -245,7 +242,6 @@ int main(int argc, char **argv) {
         rawtime = tv.tv_sec;     // Extract the seconds part
         timeinfo = localtime(&rawtime); // Convert to local time
         strftime(buffer, sizeof(buffer), "%a %b %e %T", timeinfo); // Format the date and time
-        char time_with_ms[100];
         snprintf(time_with_ms, sizeof(time_with_ms), "%s.%06ld %Z %Y:", buffer, tv.tv_usec); // Append microseconds
         
         file = fopen("steps.log", "a");
@@ -285,7 +281,6 @@ int main(int argc, char **argv) {
             rawtime = tv.tv_sec;     // Extract the seconds part
             timeinfo = localtime(&rawtime); // Convert to local time
             strftime(buffer, sizeof(buffer), "%a %b %e %T", timeinfo); // Format the date and time
-            char time_with_ms[100];
             snprintf(time_with_ms, sizeof(time_with_ms), "%s.%06ld %Z %Y:", buffer, tv.tv_usec); // Append microseconds
 
             file = fopen("steps.log", "a");
