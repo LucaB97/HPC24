@@ -6,7 +6,9 @@ REPETITIONS=$3
 NUMPROCS=64
 #NUMPROCS=(1 2 4 8 16 32 64 128 256)
 # Start monitoring memory usage in the background and log to a file
-( while true; do free -m >> memory_usage.log; sleep 1; done ) &
+
+( while true; do echo "$(date):" >> output.log; free -m >> output.log; sleep 1; done ) &
+# ( while true; do free -m >> output.log; sleep 1; done ) &
 
 srun --nodes=$NODES --ntasks-per-node=1 free > "memory"
 free_memory=$(grep Mem memory | awk '{print $4}' | sort -n | head -n 1)  #in kibibytes (KiB), where 1 KiB = 1024 bytes
@@ -25,18 +27,19 @@ module load openMPI/4.1.6/gnu
 mpicc -O3 hybrid_qsort.c -o qsort
 
 ##perform strong scalability test
-printf "Test\tProcesses\tSize\t\tTotal\t\tCommunication\tSorting\t\tMerging\n" > "weak.txt"
+printf "Test\tProcesses\tSize\t\tTotal\t\tCommunication\tSorting\t\tMerging\n" > "Weak.txt"
 
 for P in "${NUMPROCS[@]}"
 do
     for R in $(seq 1 $REPETITIONS)
     do
-        printf "$R\t" >> "weak.txt"
-        mpirun -np $P ./qsort $((P*SIZE)) >> "weak.txt"
+        printf "$R\t" >> "Weak.txt"
+        mpirun -np $P ./qsort $((P*SIZE)) >> "Weak.txt"
     done
 done
 
-mv weak.txt results/
+mv Weak.txt results/
+mv *log results/
 module purge
 rm qsort
 rm memory

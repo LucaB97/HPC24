@@ -1,0 +1,25 @@
+hybrid_qsort.c: In function ‘main’:
+hybrid_qsort.c:228:9: error: ‘rawtime’ undeclared (first use in this function); did you mean ‘ctime’?
+  228 |   time(&rawtime);
+      |         ^~~~~~~
+      |         ctime
+hybrid_qsort.c:228:9: note: each undeclared identifier is reported only once for each function it appears in
+hybrid_qsort.c:229:3: error: ‘timeinfo’ undeclared (first use in this function)
+  229 |   timeinfo = localtime(&rawtime);
+      |   ^~~~~~~~
+hybrid_qsort.c:230:12: error: ‘buffer’ undeclared (first use in this function)
+  230 |   strftime(buffer, sizeof(buffer), "%a %b %e %T %Z %Y", timeinfo);
+      |            ^~~~~~
+hybrid_qsort.c:231:3: error: ‘file’ undeclared (first use in this function)
+  231 |   file = fopen("steps.log", "a");
+      |   ^~~~
+--------------------------------------------------------------------------
+mpirun was unable to launch the specified application as it could not access
+or execute an executable:
+
+Executable: ./qsort
+Node: epyc005
+
+while attempting to start process rank 0.
+--------------------------------------------------------------------------
+rm: cannot remove 'qsort': No such file or directory

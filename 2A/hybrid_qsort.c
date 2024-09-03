@@ -147,6 +147,7 @@ int main ( int argc, char **argv )
   
   //// multiple processes
   double scatter_time, sorting_time;
+  double step_time;
   MPI_Datatype mpi_data_type;
   MPI_Type_contiguous(DATA_SIZE, MPI_DOUBLE, &mpi_data_type);
   MPI_Type_commit(&mpi_data_type);
@@ -156,14 +157,40 @@ int main ( int argc, char **argv )
   data_t *mydata = (data_t*)malloc(myN*sizeof(data_t));
 
   //Data generation and distribution
-  if (rank==0) {    
-    printf("Generation started, N=%d\n", N);
+  if (rank==0) {
+    time_t rawtime;
+    struct tm * timeinfo;
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+    char buffer[80];
+    strftime(buffer, sizeof(buffer), "%a %b %e %T %Z %Y", timeinfo);
+
+    FILE *file = fopen("steps.log", "a");
+    if (file == NULL) {
+      perror("Error opening file");
+      return EXIT_FAILURE;
+    }
+    fprintf(file, "Allocation started at: %s\n", buffer);
+    fclose(file); // Close the file after writing
     data_t *data = (data_t*)malloc(N*sizeof(data_t));
+   
     if (data == NULL) {
         // Handle memory allocation failure (e.g., log error, exit, etc.)
         fprintf(stderr, "Error: Unable to allocate memory for data on rank %d.\n", rank);
         MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
     }
+    
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+    strftime(buffer, sizeof(buffer), "%a %b %e %T %Z %Y", timeinfo);
+
+    file = fopen("steps.log", "a");
+    if (file == NULL) {
+      perror("Error opening file");
+      return EXIT_FAILURE;
+    }
+    fprintf(file, "Generation started at: %s\n", buffer);
+    fclose(file); // Close the file after writing
     generate_data(data, N);
 
     init_time = MPI_Wtime();
@@ -176,8 +203,19 @@ int main ( int argc, char **argv )
       if (i > 0) {
         displs[i] = i*(N/size) + min(i, N%size);
       }
-    }    
-    printf("Distribution started\n");
+    }
+
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+    strftime(buffer, sizeof(buffer), "%a %b %e %T %Z %Y", timeinfo);
+
+    file = fopen("steps.log", "a");
+    if (file == NULL) {
+      perror("Error opening file");
+      return EXIT_FAILURE;
+    }
+    fprintf(file, "Distribution started at: %s\n", buffer);
+    fclose(file); // Close the file after writing    
     MPI_Scatterv(data, sendcounts, displs, mpi_data_type, mydata, N, mpi_data_type, 0, MPI_COMM_WORLD);
     free(data);
     scatter_time = MPI_Wtime();
@@ -187,46 +225,61 @@ int main ( int argc, char **argv )
   }
   
   //Sorting
-  if (rank == 0) {
-    printf("Sorting started\n");
+  time(&rawtime);
+  timeinfo = localtime(&rawtime);
+  strftime(buffer, sizeof(buffer), "%a %b %e %T %Z %Y", timeinfo);
+  file = fopen("steps.log", "a");
+  if (file == NULL) {
+    perror("Error opening file");
+    return EXIT_FAILURE;
   }
+  fprintf(file, "Sorting started at: %s\n", buffer);
+  fclose(file); // Close the file after writing
   quicksort(mydata, 0, myN, compare_ge);
   MPI_Barrier(MPI_COMM_WORLD);
   sorting_time = MPI_Wtime();
 
   //Merging
-  if (rank == 0) {
-    printf("Merging started\n");
-  }
   int own_chunk_size = myN;
   for (int step = 1; step < size; step = 2 * step) {
-    
+     
+    if (rank == 0) {
+      // Obtain the current time
+      time(&rawtime);
+      timeinfo = localtime(&rawtime);      
+      strftime(buffer, sizeof(buffer), "%a %b %e %T %Z %Y", timeinfo);
+      
+      file = fopen("steps.log", "a");
+      if (file == NULL) {
+        perror("Error opening file");
+        return EXIT_FAILURE;
+      }
+      fprintf(file, "Process %d is at step %d at: %s\n", rank, step, buffer);
+      fclose(file); // Close the file after writing
+    }
+
     if (rank % (2 * step) != 0) {
-      MPI_Request requests[2];
-      MPI_ISend(&own_chunk_size, 1, MPI_INT, rank-step, 0, MPI_COMM_WORLD, &requests[0]);
-      MPI_Send(mydata, own_chunk_size, mpi_data_type, rank-step, 1, MPI_COMM_WORLD, &requests[1]);
-      MPI_Waitall(2, requests, MPI_STATUSES_IGNORE);
-      free(mydata);
+      MPI_Send(&own_chunk_size, 1, MPI_INT, rank-step, 0, MPI_COMM_WORLD);
+      MPI_Send(mydata, own_chunk_size, mpi_data_type, rank-step, 1, MPI_COMM_WORLD);
       break;
     }
  
     if (rank + step < size) {
       int received_chunk_size;
-      MPI_Request requests[2];
-      MPI_IRecv(&received_chunk_size, 1, MPI_INT, rank+step, 0, MPI_COMM_WORLD, &requests[0]);
+      MPI_Recv(&received_chunk_size, 1, MPI_INT, rank+step, 0, MPI_COMM_WORLD, &status);      
       data_t * chunk_received = (data_t *)malloc(received_chunk_size * sizeof(data_t));
       if (chunk_received == NULL) {
         //Handle memory allocation failure (e.g., log error, exit, etc.)
-	      fprintf(stderr, "Error: Unable to allocate memory to receive data on rank %d.\n", rank+step);
-	      MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+	fprintf(stderr, "Error: Unable to allocate memory to receive data on rank %d.\n", rank+step);
+	MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
       }
-      MPI_IRecv(chunk_received, received_chunk_size, mpi_data_type, rank+step, 1, MPI_COMM_WORLD, &requests[1]);
-      MPI_Waitall(2, recv_requests, MPI_STATUSES_IGNORE);
+      MPI_Recv(chunk_received, received_chunk_size, mpi_data_type, rank+step, 1, MPI_COMM_WORLD, &status);
+      //printf("Rank %d successfully received data from rank %d\n", rank, rank + step);
+     
       merge(&mydata, own_chunk_size, chunk_received, received_chunk_size);
       free(chunk_received);
       own_chunk_size = own_chunk_size + received_chunk_size;
     }
-    MPI_Barrier(MPI_COMM_WORLD);
   }
   
   MPI_Barrier(MPI_COMM_WORLD);
