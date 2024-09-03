@@ -10,6 +10,7 @@
 #include <math.h>
 #include <string.h>
 #include <time.h>
+#include <sys/time.h> // for gettimeofday
 #include <mpi.h>
 
 
@@ -118,8 +119,9 @@ int main(int argc, char **argv) {
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    time_t rawtime; // Declare rawtime
-    struct tm * timeinfo; // Declare timeinfo
+    time_t rawtime;
+    struct tm *timeinfo;
+    struct timeval tv;  // for microseconds
     char buffer[80]; // Declare buffer
     FILE *file; // Declare file
 
@@ -164,9 +166,12 @@ int main(int argc, char **argv) {
 
     // Data generation and distribution
     if (rank == 0) {
-        time(&rawtime);
-        timeinfo = localtime(&rawtime);
-        strftime(buffer, sizeof(buffer), "%a %b %e %T %Z %Y", timeinfo);
+        gettimeofday(&tv, NULL); // Get current time with microsecond precision
+        rawtime = tv.tv_sec;     // Extract the seconds part
+        timeinfo = localtime(&rawtime); // Convert to local time
+        strftime(buffer, sizeof(buffer), "%a %b %e %T", timeinfo); // Format the date and time
+        char time_with_ms[100];
+        snprintf(time_with_ms, sizeof(time_with_ms), "%s.%06ld %Z %Y:", buffer, tv.tv_usec); // Append microseconds
 
         file = fopen("steps.log", "a");
         if (file == NULL) {
@@ -182,9 +187,12 @@ int main(int argc, char **argv) {
             MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
         }
 
-        time(&rawtime);
-        timeinfo = localtime(&rawtime);
-        strftime(buffer, sizeof(buffer), "%a %b %e %T %Z %Y", timeinfo);
+        gettimeofday(&tv, NULL); // Get current time with microsecond precision
+        rawtime = tv.tv_sec;     // Extract the seconds part
+        timeinfo = localtime(&rawtime); // Convert to local time
+        strftime(buffer, sizeof(buffer), "%a %b %e %T", timeinfo); // Format the date and time
+        char time_with_ms[100];
+        snprintf(time_with_ms, sizeof(time_with_ms), "%s.%06ld %Z %Y:", buffer, tv.tv_usec); // Append microseconds
 
         file = fopen("steps.log", "a");
         if (file == NULL) {
@@ -192,8 +200,18 @@ int main(int argc, char **argv) {
             return EXIT_FAILURE;
         }
         fprintf(file, "Generation started at: %s\n", buffer);
-        fclose(file);
+
         generate_data(data, N);
+        
+        gettimeofday(&tv, NULL); // Get current time with microsecond precision
+        rawtime = tv.tv_sec;     // Extract the seconds part
+        timeinfo = localtime(&rawtime); // Convert to local time
+        strftime(buffer, sizeof(buffer), "%a %b %e %T", timeinfo); // Format the date and time
+        char time_with_ms[100];
+        snprintf(time_with_ms, sizeof(time_with_ms), "%s.%06ld %Z %Y:", buffer, tv.tv_usec); // Append microseconds
+
+        fprintf(file, "Generation ended at: %s\n", buffer);
+        fclose(file);
 
         init_time = MPI_Wtime();
         int displs[size];
@@ -207,9 +225,12 @@ int main(int argc, char **argv) {
             }
         }
 
-        time(&rawtime);
-        timeinfo = localtime(&rawtime);
-        strftime(buffer, sizeof(buffer), "%a %b %e %T %Z %Y", timeinfo);
+        gettimeofday(&tv, NULL); // Get current time with microsecond precision
+        rawtime = tv.tv_sec;     // Extract the seconds part
+        timeinfo = localtime(&rawtime); // Convert to local time
+        strftime(buffer, sizeof(buffer), "%a %b %e %T", timeinfo); // Format the date and time
+        char time_with_ms[100];
+        snprintf(time_with_ms, sizeof(time_with_ms), "%s.%06ld %Z %Y:", buffer, tv.tv_usec); // Append microseconds
 
         file = fopen("steps.log", "a");
         if (file == NULL) {
@@ -217,9 +238,23 @@ int main(int argc, char **argv) {
             return EXIT_FAILURE;
         }
         fprintf(file, "Distribution started at: %s\n", buffer);
-        fclose(file);
 
         MPI_Scatterv(data, sendcounts, displs, mpi_data_type, mydata, N, mpi_data_type, 0, MPI_COMM_WORLD);
+        
+        gettimeofday(&tv, NULL); // Get current time with microsecond precision
+        rawtime = tv.tv_sec;     // Extract the seconds part
+        timeinfo = localtime(&rawtime); // Convert to local time
+        strftime(buffer, sizeof(buffer), "%a %b %e %T", timeinfo); // Format the date and time
+        char time_with_ms[100];
+        snprintf(time_with_ms, sizeof(time_with_ms), "%s.%06ld %Z %Y:", buffer, tv.tv_usec); // Append microseconds
+        
+        file = fopen("steps.log", "a");
+        if (file == NULL) {
+            perror("Error opening file");
+            return EXIT_FAILURE;
+        }
+        fprintf(file, "Distribution ended at: %s\n", buffer);
+        fclose(file);
         free(data);
         scatter_time = MPI_Wtime();
     } else {
@@ -227,16 +262,16 @@ int main(int argc, char **argv) {
     }
 
     // Sorting
-    time(&rawtime);
-    timeinfo = localtime(&rawtime);
-    strftime(buffer, sizeof(buffer), "%a %b %e %T %Z %Y", timeinfo);
-    file = fopen("steps.log", "a");
-    if (file == NULL) {
-        perror("Error opening file");
-        return EXIT_FAILURE;
-    }
-    fprintf(file, "Sorting started at: %s\n", buffer);
-    fclose(file);
+    // time(&rawtime);
+    // timeinfo = localtime(&rawtime);
+    // strftime(buffer, sizeof(buffer), "%a %b %e %T %Z %Y", timeinfo);
+    // file = fopen("steps.log", "a");
+    // if (file == NULL) {
+    //     perror("Error opening file");
+    //     return EXIT_FAILURE;
+    // }
+    // fprintf(file, "Sorting started at: %s\n", buffer);
+    // fclose(file);
     quicksort(mydata, 0, myN, compare_ge);
     MPI_Barrier(MPI_COMM_WORLD);
     sorting_time = MPI_Wtime();
@@ -246,16 +281,19 @@ int main(int argc, char **argv) {
     for (int step = 1; step < size; step = 2 * step) {
 
         if (rank == 0) {
-            time(&rawtime);
-            timeinfo = localtime(&rawtime);
-            strftime(buffer, sizeof(buffer), "%a %b %e %T %Z %Y", timeinfo);
+            gettimeofday(&tv, NULL); // Get current time with microsecond precision
+            rawtime = tv.tv_sec;     // Extract the seconds part
+            timeinfo = localtime(&rawtime); // Convert to local time
+            strftime(buffer, sizeof(buffer), "%a %b %e %T", timeinfo); // Format the date and time
+            char time_with_ms[100];
+            snprintf(time_with_ms, sizeof(time_with_ms), "%s.%06ld %Z %Y:", buffer, tv.tv_usec); // Append microseconds
 
             file = fopen("steps.log", "a");
             if (file == NULL) {
                 perror("Error opening file");
                 return EXIT_FAILURE;
             }
-            fprintf(file, "Process %d is at step %d at: %s\n", rank, step, buffer);
+            fprintf(file, "Merging step %d at: %s\n", rank, step, buffer);
             fclose(file);
         }
 

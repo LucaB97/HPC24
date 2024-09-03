@@ -7,7 +7,7 @@ NUMPROCS=64
 #NUMPROCS=(1 2 4 8 16 32 64 128 256)
 # Start monitoring memory usage in the background and log to a file
 
-( while true; do echo "$(date):" >> output.log; free -m >> output.log; sleep 1; done ) &
+( while true; do echo "$(date):" >> output.log; free -m >> output.log; sleep 0.0000001; done ) &
 # ( while true; do free -m >> output.log; sleep 1; done ) &
 
 srun --nodes=$NODES --ntasks-per-node=1 free > "memory"
@@ -38,6 +38,8 @@ do
     done
 done
 
+
+python3 filter_output_log.py
 mv Weak.txt results/
 mv *log results/
 module purge

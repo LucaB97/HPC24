@@ -1,2 +1,0 @@
-Test	Processes	Size		Total		Communication	Sorting		Merging
-1	64 total processes failed to start
