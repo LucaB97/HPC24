@@ -172,7 +172,6 @@ int main(int argc, char **argv) {
         strftime(buffer, sizeof(buffer), "%a %b %e %T", timeinfo); // Format the date and time
         char time_with_ms[100];
         snprintf(time_with_ms, sizeof(time_with_ms), "%s.%06ld %Z %Y:", buffer, tv.tv_usec); // Append microseconds
-
         file = fopen("steps.log", "a");
         if (file == NULL) {
             perror("Error opening file");
@@ -192,13 +191,13 @@ int main(int argc, char **argv) {
         timeinfo = localtime(&rawtime); // Convert to local time
         strftime(buffer, sizeof(buffer), "%a %b %e %T", timeinfo); // Format the date and time
         snprintf(time_with_ms, sizeof(time_with_ms), "%s.%06ld %Z %Y:", buffer, tv.tv_usec); // Append microseconds
-
         file = fopen("steps.log", "a");
         if (file == NULL) {
             perror("Error opening file");
             return EXIT_FAILURE;
         }
         fprintf(file, "Generation started at: %s\n", buffer);
+        fclose(file);
 
         generate_data(data, N);
         
@@ -207,7 +206,11 @@ int main(int argc, char **argv) {
         timeinfo = localtime(&rawtime); // Convert to local time
         strftime(buffer, sizeof(buffer), "%a %b %e %T", timeinfo); // Format the date and time
         snprintf(time_with_ms, sizeof(time_with_ms), "%s.%06ld %Z %Y:", buffer, tv.tv_usec); // Append microseconds
-
+        file = fopen("steps.log", "a");
+        if (file == NULL) {
+            perror("Error opening file");
+            return EXIT_FAILURE;
+        }
         fprintf(file, "Generation ended at: %s\n", buffer);
         fclose(file);
 
@@ -228,7 +231,6 @@ int main(int argc, char **argv) {
         timeinfo = localtime(&rawtime); // Convert to local time
         strftime(buffer, sizeof(buffer), "%a %b %e %T", timeinfo); // Format the date and time
         snprintf(time_with_ms, sizeof(time_with_ms), "%s.%06ld %Z %Y:", buffer, tv.tv_usec); // Append microseconds
-
         file = fopen("steps.log", "a");
         if (file == NULL) {
             perror("Error opening file");
@@ -242,8 +244,7 @@ int main(int argc, char **argv) {
         rawtime = tv.tv_sec;     // Extract the seconds part
         timeinfo = localtime(&rawtime); // Convert to local time
         strftime(buffer, sizeof(buffer), "%a %b %e %T", timeinfo); // Format the date and time
-        snprintf(time_with_ms, sizeof(time_with_ms), "%s.%06ld %Z %Y:", buffer, tv.tv_usec); // Append microseconds
-        
+        snprintf(time_with_ms, sizeof(time_with_ms), "%s.%06ld %Z %Y:", buffer, tv.tv_usec); // Append microseconds        
         file = fopen("steps.log", "a");
         if (file == NULL) {
             perror("Error opening file");
@@ -251,6 +252,7 @@ int main(int argc, char **argv) {
         }
         fprintf(file, "Distribution ended at: %s\n", buffer);
         fclose(file);
+
         free(data);
         scatter_time = MPI_Wtime();
     } else {
@@ -258,16 +260,6 @@ int main(int argc, char **argv) {
     }
 
     // Sorting
-    // time(&rawtime);
-    // timeinfo = localtime(&rawtime);
-    // strftime(buffer, sizeof(buffer), "%a %b %e %T %Z %Y", timeinfo);
-    // file = fopen("steps.log", "a");
-    // if (file == NULL) {
-    //     perror("Error opening file");
-    //     return EXIT_FAILURE;
-    // }
-    // fprintf(file, "Sorting started at: %s\n", buffer);
-    // fclose(file);
     quicksort(mydata, 0, myN, compare_ge);
     MPI_Barrier(MPI_COMM_WORLD);
     sorting_time = MPI_Wtime();
@@ -281,8 +273,8 @@ int main(int argc, char **argv) {
             rawtime = tv.tv_sec;     // Extract the seconds part
             timeinfo = localtime(&rawtime); // Convert to local time
             strftime(buffer, sizeof(buffer), "%a %b %e %T", timeinfo); // Format the date and time
+            char time_with_ms[100];
             snprintf(time_with_ms, sizeof(time_with_ms), "%s.%06ld %Z %Y:", buffer, tv.tv_usec); // Append microseconds
-
             file = fopen("steps.log", "a");
             if (file == NULL) {
                 perror("Error opening file");
