@@ -2,7 +2,7 @@ from datetime import datetime
 
 # Define the paths to your files
 memory_log_file = "output.log"  # Replace with your actual file name
-event_log_file = "step.log"  # Replace with your actual file name
+event_log_file = "steps.log"  # Replace with your actual file name
 output_file = "output.log"
 
 # Function to parse the date from the log

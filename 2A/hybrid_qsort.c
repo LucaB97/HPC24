@@ -225,7 +225,8 @@ int main(int argc, char **argv) {
                 displs[i] = i * (N / size) + min(i, N % size);
             }
         }
-
+        
+	printf("Hello");
         gettimeofday(&tv, NULL); // Get current time with microsecond precision
         rawtime = tv.tv_sec;     // Extract the seconds part
         timeinfo = localtime(&rawtime); // Convert to local time
@@ -266,9 +267,11 @@ int main(int argc, char **argv) {
 
     // Merging
     int own_chunk_size = myN;
+    printf("Merging should start here");
     for (int step = 1; step < size; step = 2 * step) {
-
+    
         if (rank == 0) {
+	    printf("Here we go");
             gettimeofday(&tv, NULL); // Get current time with microsecond precision
             rawtime = tv.tv_sec;     // Extract the seconds part
             timeinfo = localtime(&rawtime); // Convert to local time
@@ -280,7 +283,7 @@ int main(int argc, char **argv) {
                 perror("Error opening file");
                 return EXIT_FAILURE;
             }
-            fprintf(file, "Merging step %d at: %s\n", rank, step, buffer);
+            fprintf(file, "Merging step %d at: %s\n", step, buffer);
             fclose(file);
         }
 

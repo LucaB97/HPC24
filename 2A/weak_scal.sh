@@ -7,9 +7,10 @@ NUMPROCS=64
 #NUMPROCS=(1 2 4 8 16 32 64 128 256)
 # Start monitoring memory usage in the background and log to a file
 
-( while true; do echo "$(date +'%a %b %e %H:%M:%S.%6N %Z %Y'):" >> output.log; free -m >> output.log; sleep 0.0000001; done ) &
-# ( while true; do echo "$(date):" >> output.log; free -m >> output.log; sleep 0.0000001; done ) &
-# ( while true; do free -m >> output.log; sleep 1; done ) &
+#( while true; do echo "$(date +'%a %b %e %H:%M:%S.%6N %Z %Y'):" >> output.log; free -m >> output.log; sleep 0.0000001; done ) &
+( while true; do echo "$(date):" >> output.log; free -m >> output.log; sleep 1; done ) &
+#( while true; do free -m >> output.log; sleep 1; done ) &
+#( while true; do echo "$(date):" >> output.log; vmstat 1 2 | tail -n 1 >> output.log; sleep 1; done ) &
 
 srun --nodes=$NODES --ntasks-per-node=1 free > "memory"
 free_memory=$(grep Mem memory | awk '{print $4}' | sort -n | head -n 1)  #in kibibytes (KiB), where 1 KiB = 1024 bytes
@@ -40,11 +41,11 @@ do
 done
 
 
-python3 filter_output_log.py
+#python3 filter_output_log.py
 mv Weak.txt results/
 mv *log results/
-module purge
 rm qsort
 rm memory
 rm memory_req
+module purge
 
