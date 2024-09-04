@@ -17,7 +17,7 @@
 // ================================================================
 //  MACROS and DATATYPES
 // ================================================================
-
+#define BUF_SIZE 256
 
 // measure ther cpu process time
 #define CPU_TIME (clock_gettime( CLOCK_PROCESS_CPUTIME_ID, &ts ), (double)ts.tv_sec + \
@@ -92,6 +92,9 @@ void generate_data(data_t *, const int );
 void quicksort( data_t *, int, int, compare_t ); 
 void merge( data_t **, const int, const data_t *, const int ); 
 
+void get_meminfo(unsigned long *, unsigned long *, unsigned long *,
+                 unsigned long *, unsigned long *, unsigned long *,
+                 unsigned long *);
 
 // ================================================================
 //  CODE
@@ -119,11 +122,11 @@ int main(int argc, char **argv) {
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    time_t rawtime;
-    struct tm *timeinfo;
-    struct timeval tv;  // for microseconds
-    char buffer[80]; // Declare buffer
-    FILE *file; // Declare file
+    FILE *file;
+    unsigned long total_mem, free_mem, available_mem, buffers, cached;
+    unsigned long total_swap, free_swap;
+    unsigned long used_mem;
+    unsigned long buff_cache;
 
     //// 1 process
     if (size == 1) {
@@ -166,18 +169,17 @@ int main(int argc, char **argv) {
 
     // Data generation and distribution
     if (rank == 0) {
-        gettimeofday(&tv, NULL); // Get current time with microsecond precision
-        rawtime = tv.tv_sec;     // Extract the seconds part
-        timeinfo = localtime(&rawtime); // Convert to local time
-        strftime(buffer, sizeof(buffer), "%a %b %e %T", timeinfo); // Format the date and time
-        char time_with_ms[100];
-        snprintf(time_with_ms, sizeof(time_with_ms), "%s.%06ld %Z %Y:", buffer, tv.tv_usec); // Append microseconds
         file = fopen("steps.log", "a");
         if (file == NULL) {
             perror("Error opening file");
             return EXIT_FAILURE;
         }
-        fprintf(file, "Allocation started at: %s\n", buffer);
+        fprintf(file, "Allocation started\n");
+        get_meminfo(&total_mem, &free_mem, &available_mem, &buffers, &cached, &total_swap, &free_swap);
+        fprintf(file, "               total        used        free      shared  buff/cache   available\n");
+        fprintf(file, "Mem:       %8lu  %8lu  %8lu  %8lu  %8lu  %8lu\n",
+                total_mem, used_mem, free_mem, 0UL, buff_cache, available_mem);
+        fprintf(file, "Swap:      %8lu  %8lu  %8lu\n", total_swap, total_swap - free_swap, free_swap);
         fclose(file);
 
         data_t *data = (data_t*)malloc(N * sizeof(data_t));
@@ -186,32 +188,32 @@ int main(int argc, char **argv) {
             MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
         }
 
-        gettimeofday(&tv, NULL); // Get current time with microsecond precision
-        rawtime = tv.tv_sec;     // Extract the seconds part
-        timeinfo = localtime(&rawtime); // Convert to local time
-        strftime(buffer, sizeof(buffer), "%a %b %e %T", timeinfo); // Format the date and time
-        snprintf(time_with_ms, sizeof(time_with_ms), "%s.%06ld %Z %Y:", buffer, tv.tv_usec); // Append microseconds
         file = fopen("steps.log", "a");
         if (file == NULL) {
             perror("Error opening file");
             return EXIT_FAILURE;
         }
-        fprintf(file, "Generation started at: %s\n", buffer);
+        fprintf(file, "Generation started\n");
+        get_meminfo(&total_mem, &free_mem, &available_mem, &buffers, &cached, &total_swap, &free_swap);
+        fprintf(file, "               total        used        free      shared  buff/cache   available\n");
+        fprintf(file, "Mem:       %8lu  %8lu  %8lu  %8lu  %8lu  %8lu\n",
+                total_mem, used_mem, free_mem, 0UL, buff_cache, available_mem);
+        fprintf(file, "Swap:      %8lu  %8lu  %8lu\n", total_swap, total_swap - free_swap, free_swap);
         fclose(file);
 
         generate_data(data, N);
         
-        gettimeofday(&tv, NULL); // Get current time with microsecond precision
-        rawtime = tv.tv_sec;     // Extract the seconds part
-        timeinfo = localtime(&rawtime); // Convert to local time
-        strftime(buffer, sizeof(buffer), "%a %b %e %T", timeinfo); // Format the date and time
-        snprintf(time_with_ms, sizeof(time_with_ms), "%s.%06ld %Z %Y:", buffer, tv.tv_usec); // Append microseconds
         file = fopen("steps.log", "a");
         if (file == NULL) {
             perror("Error opening file");
             return EXIT_FAILURE;
         }
-        fprintf(file, "Generation ended at: %s\n", buffer);
+        fprintf(file, "Generation ended\n");
+        get_meminfo(&total_mem, &free_mem, &available_mem, &buffers, &cached, &total_swap, &free_swap);
+        fprintf(file, "               total        used        free      shared  buff/cache   available\n");
+        fprintf(file, "Mem:       %8lu  %8lu  %8lu  %8lu  %8lu  %8lu\n",
+                total_mem, used_mem, free_mem, 0UL, buff_cache, available_mem);
+        fprintf(file, "Swap:      %8lu  %8lu  %8lu\n", total_swap, total_swap - free_swap, free_swap);
         fclose(file);
 
         init_time = MPI_Wtime();
@@ -226,32 +228,32 @@ int main(int argc, char **argv) {
             }
         }
         
-	printf("Hello");
-        gettimeofday(&tv, NULL); // Get current time with microsecond precision
-        rawtime = tv.tv_sec;     // Extract the seconds part
-        timeinfo = localtime(&rawtime); // Convert to local time
-        strftime(buffer, sizeof(buffer), "%a %b %e %T", timeinfo); // Format the date and time
-        snprintf(time_with_ms, sizeof(time_with_ms), "%s.%06ld %Z %Y:", buffer, tv.tv_usec); // Append microseconds
         file = fopen("steps.log", "a");
         if (file == NULL) {
             perror("Error opening file");
             return EXIT_FAILURE;
         }
-        fprintf(file, "Distribution started at: %s\n", buffer);
+        fprintf(file, "Distribution started\n");
+        get_meminfo(&total_mem, &free_mem, &available_mem, &buffers, &cached, &total_swap, &free_swap);
+        fprintf(file, "               total        used        free      shared  buff/cache   available\n");
+        fprintf(file, "Mem:       %8lu  %8lu  %8lu  %8lu  %8lu  %8lu\n",
+                total_mem, used_mem, free_mem, 0UL, buff_cache, available_mem);
+        fprintf(file, "Swap:      %8lu  %8lu  %8lu\n", total_swap, total_swap - free_swap, free_swap);
+        fclose(file);
 
         MPI_Scatterv(data, sendcounts, displs, mpi_data_type, mydata, N, mpi_data_type, 0, MPI_COMM_WORLD);
         
-        gettimeofday(&tv, NULL); // Get current time with microsecond precision
-        rawtime = tv.tv_sec;     // Extract the seconds part
-        timeinfo = localtime(&rawtime); // Convert to local time
-        strftime(buffer, sizeof(buffer), "%a %b %e %T", timeinfo); // Format the date and time
-        snprintf(time_with_ms, sizeof(time_with_ms), "%s.%06ld %Z %Y:", buffer, tv.tv_usec); // Append microseconds        
         file = fopen("steps.log", "a");
         if (file == NULL) {
             perror("Error opening file");
             return EXIT_FAILURE;
         }
-        fprintf(file, "Distribution ended at: %s\n", buffer);
+        fprintf(file, "Distribution ended\n");
+        get_meminfo(&total_mem, &free_mem, &available_mem, &buffers, &cached, &total_swap, &free_swap);
+        fprintf(file, "               total        used        free      shared  buff/cache   available\n");
+        fprintf(file, "Mem:       %8lu  %8lu  %8lu  %8lu  %8lu  %8lu\n",
+                total_mem, used_mem, free_mem, 0UL, buff_cache, available_mem);
+        fprintf(file, "Swap:      %8lu  %8lu  %8lu\n", total_swap, total_swap - free_swap, free_swap);
         fclose(file);
 
         free(data);
@@ -263,29 +265,25 @@ int main(int argc, char **argv) {
     // Sorting
     quicksort(mydata, 0, myN, compare_ge);
     MPI_Barrier(MPI_COMM_WORLD);
+    if (rank == 0) {
+        file = fopen("steps.log", "a");
+        if (file == NULL) {
+            perror("Error opening file");
+            return EXIT_FAILURE;
+        }
+        fprintf(file, "Merging started\n");
+        get_meminfo(&total_mem, &free_mem, &available_mem, &buffers, &cached, &total_swap, &free_swap);
+        fprintf(file, "               total        used        free      shared  buff/cache   available\n");
+        fprintf(file, "Mem:       %8lu  %8lu  %8lu  %8lu  %8lu  %8lu\n",
+                total_mem, used_mem, free_mem, 0UL, buff_cache, available_mem);
+        fprintf(file, "Swap:      %8lu  %8lu  %8lu\n", total_swap, total_swap - free_swap, free_swap);
+        fclose(file);
+    }
     sorting_time = MPI_Wtime();
 
     // Merging
     int own_chunk_size = myN;
-    printf("Merging should start here");
     for (int step = 1; step < size; step = 2 * step) {
-    
-        if (rank == 0) {
-	    printf("Here we go");
-            gettimeofday(&tv, NULL); // Get current time with microsecond precision
-            rawtime = tv.tv_sec;     // Extract the seconds part
-            timeinfo = localtime(&rawtime); // Convert to local time
-            strftime(buffer, sizeof(buffer), "%a %b %e %T", timeinfo); // Format the date and time
-            char time_with_ms[100];
-            snprintf(time_with_ms, sizeof(time_with_ms), "%s.%06ld %Z %Y:", buffer, tv.tv_usec); // Append microseconds
-            file = fopen("steps.log", "a");
-            if (file == NULL) {
-                perror("Error opening file");
-                return EXIT_FAILURE;
-            }
-            fprintf(file, "Merging step %d at: %s\n", step, buffer);
-            fclose(file);
-        }
 
         if (rank % (2 * step) != 0) {
             MPI_Send(&own_chunk_size, 1, MPI_INT, rank - step, 0, MPI_COMM_WORLD);
@@ -310,6 +308,20 @@ int main(int argc, char **argv) {
     }
 
     MPI_Barrier(MPI_COMM_WORLD);
+    if (rank == 0) {
+        file = fopen("steps.log", "a");
+        if (file == NULL) {
+            perror("Error opening file");
+            return EXIT_FAILURE;
+        }
+        fprintf(file, "Merging ended\n");
+        get_meminfo(&total_mem, &free_mem, &available_mem, &buffers, &cached, &total_swap, &free_swap);
+        fprintf(file, "               total        used        free      shared  buff/cache   available\n");
+        fprintf(file, "Mem:       %8lu  %8lu  %8lu  %8lu  %8lu  %8lu\n",
+                total_mem, used_mem, free_mem, 0UL, buff_cache, available_mem);
+        fprintf(file, "Swap:      %8lu  %8lu  %8lu\n", total_swap, total_swap - free_swap, free_swap);
+        fclose(file);
+    }
     end_time = MPI_Wtime();
 
     // Correctness check and time printing
@@ -541,4 +553,42 @@ void merge(data_t **arr1, int n1, const data_t *arr2, int n2) {
 
     // Free the temporary result array
     free(result);
+}
+
+
+// Function to read and parse /proc/meminfo into various memory metrics
+void get_meminfo(unsigned long *total_mem, unsigned long *free_mem, unsigned long *available_mem,
+                 unsigned long *buffers, unsigned long *cached, unsigned long *total_swap,
+                 unsigned long *free_swap) {
+    FILE *file;
+    char line[BUF_SIZE];
+    
+    // Initialize all values to 0
+    *total_mem = *free_mem = *available_mem = *buffers = *cached = *total_swap = *free_swap = 0;
+    
+    file = fopen("/proc/meminfo", "r");
+    if (file == NULL) {
+        perror("fopen");
+        exit(EXIT_FAILURE);
+    }
+    
+    while (fgets(line, sizeof(line), file)) {
+        if (strstr(line, "MemTotal:")) {
+            sscanf(line, "MemTotal: %lu kB", total_mem);
+        } else if (strstr(line, "MemFree:")) {
+            sscanf(line, "MemFree: %lu kB", free_mem);
+        } else if (strstr(line, "MemAvailable:")) {
+            sscanf(line, "MemAvailable: %lu kB", available_mem);
+        } else if (strstr(line, "Buffers:")) {
+            sscanf(line, "Buffers: %lu kB", buffers);
+        } else if (strstr(line, "Cached:")) {
+            sscanf(line, "Cached: %lu kB", cached);
+        } else if (strstr(line, "SwapTotal:")) {
+            sscanf(line, "SwapTotal: %lu kB", total_swap);
+        } else if (strstr(line, "SwapFree:")) {
+            sscanf(line, "SwapFree: %lu kB", free_swap);
+        }
+    }
+    
+    fclose(file);
 }
