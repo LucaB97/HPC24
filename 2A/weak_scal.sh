@@ -3,7 +3,7 @@
 NODES=$1
 SIZE=$2
 REPETITIONS=$3
-NUMPROCS=24
+NUMPROCS=128
 #NUMPROCS=(1 2 4 8 16 32 64 128 256)
 # Start monitoring memory usage in the background and log to a file
 

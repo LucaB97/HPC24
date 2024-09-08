@@ -1,0 +1,15 @@
+#!/bin/bash
+
+#SBATCH --job-name=_ex2_
+#SBATCH --time=0-00:20:00
+#SBATCH -pTHIN
+#SBATCH -n72
+#SBATCH --output=%x%j.out
+#SBATCH --error=%x%j.err
+#SBATCH -N3
+
+SIZE=$1
+REP=$2
+
+./weak_scal2.sh 1 $SIZE $REP
+

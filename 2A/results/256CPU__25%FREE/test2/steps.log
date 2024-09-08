@@ -1,0 +1,32 @@
+Allocation started
+               total        used        free      shared  buff/cache   available
+Mem:       527761168         0  318061092         0         0  509701048
+Swap:       8388604     32512   8356092
+Generation started
+               total        used        free      shared  buff/cache   available
+Mem:       527761168         0  318060592         0         0  509700548
+Swap:       8388604     32512   8356092
+Generation ended
+               total        used        free      shared  buff/cache   available
+Mem:       527761168         0  290917032         0         0  482557072
+Swap:       8388604     32512   8356092
+Distribution started
+               total        used        free      shared  buff/cache   available
+Mem:       527761168         0  290917032         0         0  482557072
+Swap:       8388604     32512   8356092
+Distribution ended
+               total        used        free      shared  buff/cache   available
+Mem:       527761168         0  275958588         0         0  467598572
+Swap:       8388604     32512   8356092
+Freeing completed
+               total        used        free      shared  buff/cache   available
+Mem:       527761168         0  289516188         0         0  481156172
+Swap:       8388604     32512   8356092
+Merging started
+               total        used        free      shared  buff/cache   available
+Mem:       527761168         0  289521076         0         0  481161060
+Swap:       8388604     32512   8356092
+Merging ended
+               total        used        free      shared  buff/cache   available
+Mem:       527761168         0  229058448         0         0  419602052
+Swap:       8388604     32512   8356092

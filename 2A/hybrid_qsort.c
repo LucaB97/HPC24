@@ -257,7 +257,20 @@ int main(int argc, char **argv) {
         fclose(file);
 
         free(data);
-        scatter_time = MPI_Wtime();
+	scatter_time = MPI_Wtime();
+	file = fopen("steps.log", "a");
+	if (file == NULL) {
+	  perror("Error opening file");
+	  return EXIT_FAILURE;
+	}
+	fprintf(file, "Freeing completed\n");
+	get_meminfo(&total_mem, &free_mem, &available_mem, &buffers, &cached, &total_swap, &free_swap);
+	fprintf(file, "               total        used        free      shared  buff/cache   available\n");
+	fprintf(file, "Mem:       %8lu  %8lu  %8lu  %8lu  %8lu  %8lu\n",
+	total_mem, used_mem, free_mem, 0UL, buff_cache, available_mem);
+	fprintf(file, "Swap:      %8lu  %8lu  %8lu\n", total_swap, total_swap - free_swap, free_swap);
+	fclose(file);
+        
     } else {
         MPI_Scatterv(NULL, NULL, NULL, mpi_data_type, mydata, myN, mpi_data_type, 0, MPI_COMM_WORLD);
     }

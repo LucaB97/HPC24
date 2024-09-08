@@ -1,12 +1,16 @@
 #!/bin/bash
 
 #SBATCH --job-name=_ex2_
-#SBATCH --time=0-00:01:00
-#SBATCH -pTHIN
-#SBATCH -n24
+#SBATCH --time=0-00:03:00
+#SBATCH -pEPYC
+#SBATCH -n128
 #SBATCH --output=%x%j.out
 #SBATCH --error=%x%j.err
 #SBATCH -N1
 
+
+SIZE=$1
+REP=$2
+
 # ./strong_scal.sh 10000000 1
-./weak_scal.sh 1 100000 1
+./weak_scal.sh 1 $SIZE $REP
