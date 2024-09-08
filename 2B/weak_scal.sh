@@ -19,7 +19,8 @@ fi
 ##load modules & create executable for the algorithm
 module purge
 module load openMPI/4.1.6/gnu
-mpicc -O3 hybrid_qsort.c -o qsort
+# mpicc -O3 hybrid_qsort.c -o qsort
+mpicc -O3 new_qsort.c -o qsort
 
 ##perform strong scalability test
 printf "Test\tProcesses\tSize\t\tTotal\t\tCommunication\tSorting\t\tMerging\n" > "Weak.txt"
