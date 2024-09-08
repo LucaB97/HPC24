@@ -18,6 +18,7 @@
 //  MACROS and DATATYPES
 // ================================================================
 #define BUF_SIZE 256
+#define KB_TO_MB(x) ((x) / 1024)
 
 // measure ther cpu process time
 #define CPU_TIME (clock_gettime( CLOCK_PROCESS_CPUTIME_ID, &ts ), (double)ts.tv_sec + \
@@ -84,30 +85,32 @@ extern inline compare_t compare;        // the compare function
 extern inline compare_t compare_ge;     // the compare for "greater or equal"
 verify_t  verify_partitioning;          // verification functions
 verify_t  verify_sorting;
+verify_t  show_array;
 
-double median_of_three(double, double, double );                  // needed for the pivot 
+void quicksort( data_t *, int, int, compare_t ); 
 extern inline int partitioning( data_t *, int, int, compare_t );
 
 void generate_data(data_t *, const int );
-void quicksort( data_t *, int, int, compare_t ); 
+double median_of_three(double, double, double );                  // needed for the pivot 
 void merge( data_t **, const int, const data_t *, const int ); 
 
 void get_meminfo(unsigned long *, unsigned long *, unsigned long *,
                  unsigned long *, unsigned long *, unsigned long *,
                  unsigned long *);
 
+int print_memory_info(char *, bool );
+
+void print_results(int , long int , double , double , double , double );
+
 // ================================================================
 //  CODE
 // ================================================================
 
-#include <mpi.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-
 int main(int argc, char **argv) {
-    int N = N_dflt;
+    
+    print_memory_info("\nRun started-------------", false);
 
+    int N = N_dflt;
     /* check command-line arguments */
     {
         int a = 0;
@@ -122,13 +125,11 @@ int main(int argc, char **argv) {
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    FILE *file;
-    unsigned long total_mem, free_mem, available_mem, buffers, cached;
-    unsigned long total_swap, free_swap;
-    unsigned long used_mem;
-    unsigned long buff_cache;
 
-    //// 1 process
+    /////////////////////////
+    // 1 MPI process
+    /////////////////////////
+
     if (size == 1) {
         data_t *data = (data_t*)malloc(N*sizeof(data_t));
         if (data == NULL) {
@@ -142,12 +143,8 @@ int main(int argc, char **argv) {
         end_time = MPI_Wtime();
 
         if (verify_sorting(data, 0, N, 0)) {
-            printf("%d\t\t%d", size, N);
-            if (N >= 10000000)
-                printf("\t");
-            else
-                printf("\t\t");
-            printf("%.6f\t0.000000\t%.6f\t0.000000\n", end_time - init_time, end_time - init_time);
+            // show_array(data, 0, N, 0);
+            print_results(size, N, init_time, 0, 0, end_time);
         } else {
             printf("the array is not sorted correctly\n");
         }
@@ -157,66 +154,42 @@ int main(int argc, char **argv) {
         return 0;
     }
 
-    //// multiple processes
+
+    /////////////////////////
+    // Multiple MPI processes
+    /////////////////////////
+
     double scatter_time, sorting_time;
-    double step_time;
     MPI_Datatype mpi_data_type;
     MPI_Type_contiguous(DATA_SIZE, MPI_DOUBLE, &mpi_data_type);
     MPI_Type_commit(&mpi_data_type);
 
+    // Each process defines its chunk size and allocated memory for it
     int myN = N / size + (rank < N % size);
     data_t *mydata = (data_t*)malloc(myN * sizeof(data_t));
 
-    // Data generation and distribution
-    if (rank == 0) {
-        file = fopen("steps.log", "a");
-        if (file == NULL) {
-            perror("Error opening file");
-            return EXIT_FAILURE;
-        }
-        fprintf(file, "Allocation started\n");
-        get_meminfo(&total_mem, &free_mem, &available_mem, &buffers, &cached, &total_swap, &free_swap);
-        fprintf(file, "               total        used        free      shared  buff/cache   available\n");
-        fprintf(file, "Mem:       %8lu  %8lu  %8lu  %8lu  %8lu  %8lu\n",
-                total_mem, used_mem, free_mem, 0UL, buff_cache, available_mem);
-        fprintf(file, "Swap:      %8lu  %8lu  %8lu\n", total_swap, total_swap - free_swap, free_swap);
-        fclose(file);
 
+    // Root process distributes the data to all the other processes
+    if (rank == 0) {
+        
+        //// Memory allocation
+        print_memory_info("\nAllocation started------", false);
         data_t *data = (data_t*)malloc(N * sizeof(data_t));
         if (data == NULL) {
             fprintf(stderr, "Error: Unable to allocate memory for data on rank %d.\n", rank);
             MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
         }
 
-        file = fopen("steps.log", "a");
-        if (file == NULL) {
-            perror("Error opening file");
-            return EXIT_FAILURE;
-        }
-        fprintf(file, "Generation started\n");
-        get_meminfo(&total_mem, &free_mem, &available_mem, &buffers, &cached, &total_swap, &free_swap);
-        fprintf(file, "               total        used        free      shared  buff/cache   available\n");
-        fprintf(file, "Mem:       %8lu  %8lu  %8lu  %8lu  %8lu  %8lu\n",
-                total_mem, used_mem, free_mem, 0UL, buff_cache, available_mem);
-        fprintf(file, "Swap:      %8lu  %8lu  %8lu\n", total_swap, total_swap - free_swap, free_swap);
-        fclose(file);
-
+        //// Data generation
+        print_memory_info("\nGeneration started------", false);
         generate_data(data, N);
-        
-        file = fopen("steps.log", "a");
-        if (file == NULL) {
-            perror("Error opening file");
-            return EXIT_FAILURE;
-        }
-        fprintf(file, "Generation ended\n");
-        get_meminfo(&total_mem, &free_mem, &available_mem, &buffers, &cached, &total_swap, &free_swap);
-        fprintf(file, "               total        used        free      shared  buff/cache   available\n");
-        fprintf(file, "Mem:       %8lu  %8lu  %8lu  %8lu  %8lu  %8lu\n",
-                total_mem, used_mem, free_mem, 0UL, buff_cache, available_mem);
-        fprintf(file, "Swap:      %8lu  %8lu  %8lu\n", total_swap, total_swap - free_swap, free_swap);
-        fclose(file);
+        print_memory_info("\nGeneration ended--------", false);
 
+        //// Execution time is computed from here
         init_time = MPI_Wtime();
+
+        //// DATA DISTRIBUTION
+        ////// determination of the size and starting point of each chunk
         int displs[size];
         int sendcounts[size];
         displs[0] = 0;
@@ -227,135 +200,94 @@ int main(int argc, char **argv) {
                 displs[i] = i * (N / size) + min(i, N % size);
             }
         }
-        
-        file = fopen("steps.log", "a");
-        if (file == NULL) {
-            perror("Error opening file");
-            return EXIT_FAILURE;
-        }
-        fprintf(file, "Distribution started\n");
-        get_meminfo(&total_mem, &free_mem, &available_mem, &buffers, &cached, &total_swap, &free_swap);
-        fprintf(file, "               total        used        free      shared  buff/cache   available\n");
-        fprintf(file, "Mem:       %8lu  %8lu  %8lu  %8lu  %8lu  %8lu\n",
-                total_mem, used_mem, free_mem, 0UL, buff_cache, available_mem);
-        fprintf(file, "Swap:      %8lu  %8lu  %8lu\n", total_swap, total_swap - free_swap, free_swap);
-        fclose(file);
 
-        MPI_Scatterv(data, sendcounts, displs, mpi_data_type, mydata, N, mpi_data_type, 0, MPI_COMM_WORLD);
-        
-        file = fopen("steps.log", "a");
-        if (file == NULL) {
-            perror("Error opening file");
-            return EXIT_FAILURE;
-        }
-        fprintf(file, "Distribution ended\n");
-        get_meminfo(&total_mem, &free_mem, &available_mem, &buffers, &cached, &total_swap, &free_swap);
-        fprintf(file, "               total        used        free      shared  buff/cache   available\n");
-        fprintf(file, "Mem:       %8lu  %8lu  %8lu  %8lu  %8lu  %8lu\n",
-                total_mem, used_mem, free_mem, 0UL, buff_cache, available_mem);
-        fprintf(file, "Swap:      %8lu  %8lu  %8lu\n", total_swap, total_swap - free_swap, free_swap);
-        fclose(file);
+        ////// efficient distribution using MPI_Scatterv
+        print_memory_info("\nDistribution started----", false);
+        MPI_Scatterv(data, sendcounts, displs, mpi_data_type, mydata, N, mpi_data_type, 0, MPI_COMM_WORLD);        
+        print_memory_info("\nDistribution ended------", false);
 
+        //// Freeing the memory used to hold the whole data on the root process
         free(data);
-	scatter_time = MPI_Wtime();
-	file = fopen("steps.log", "a");
-	if (file == NULL) {
-	  perror("Error opening file");
-	  return EXIT_FAILURE;
-	}
-	fprintf(file, "Freeing completed\n");
-	get_meminfo(&total_mem, &free_mem, &available_mem, &buffers, &cached, &total_swap, &free_swap);
-	fprintf(file, "               total        used        free      shared  buff/cache   available\n");
-	fprintf(file, "Mem:       %8lu  %8lu  %8lu  %8lu  %8lu  %8lu\n",
-	total_mem, used_mem, free_mem, 0UL, buff_cache, available_mem);
-	fprintf(file, "Swap:      %8lu  %8lu  %8lu\n", total_swap, total_swap - free_swap, free_swap);
-	fclose(file);
-        
-    } else {
-        MPI_Scatterv(NULL, NULL, NULL, mpi_data_type, mydata, myN, mpi_data_type, 0, MPI_COMM_WORLD);
-    }
+        print_memory_info("\nFreeing ended-----------", false);
+        scatter_time = MPI_Wtime();
 
-    // Sorting
+    } else {
+        ////MPI_Scatterv is a collective operation, thus all processes in the communicator (MPI_COMM_WORLD) must call it
+        ////however, non-root processes are not performing the data distribution, so they pass NULL for sendbuf, sendcounts, and displs
+        MPI_Scatterv(NULL, NULL, NULL, mpi_data_type, mydata, myN, mpi_data_type, 0, MPI_COMM_WORLD);
+    }    
+
+    // SORTING
     quicksort(mydata, 0, myN, compare_ge);
     MPI_Barrier(MPI_COMM_WORLD);
-    if (rank == 0) {
-        file = fopen("steps.log", "a");
-        if (file == NULL) {
-            perror("Error opening file");
-            return EXIT_FAILURE;
-        }
-        fprintf(file, "Merging started\n");
-        get_meminfo(&total_mem, &free_mem, &available_mem, &buffers, &cached, &total_swap, &free_swap);
-        fprintf(file, "               total        used        free      shared  buff/cache   available\n");
-        fprintf(file, "Mem:       %8lu  %8lu  %8lu  %8lu  %8lu  %8lu\n",
-                total_mem, used_mem, free_mem, 0UL, buff_cache, available_mem);
-        fprintf(file, "Swap:      %8lu  %8lu  %8lu\n", total_swap, total_swap - free_swap, free_swap);
-        fclose(file);
-    }
     sorting_time = MPI_Wtime();
 
-    // Merging
-    int own_chunk_size = myN;
+    // MERGING
+    if (rank == 0) {
+        print_memory_info("\nMerging started---------", false);
+    }
+
+    // int own_chunk_size = myN;
+    
+    //// the merge operation is performed as an iterative binary tree-based reduction process (logarithmic steps)
     for (int step = 1; step < size; step = 2 * step) {
 
         if (rank % (2 * step) != 0) {
-            MPI_Send(&own_chunk_size, 1, MPI_INT, rank - step, 0, MPI_COMM_WORLD);
-            MPI_Send(mydata, own_chunk_size, mpi_data_type, rank - step, 1, MPI_COMM_WORLD);
+            ////// the sender process sends its data and exits the loop
+            MPI_Send(&myN, 1, MPI_INT, rank - step, 0, MPI_COMM_WORLD);
+            MPI_Send(mydata, myN, mpi_data_type, rank - step, 1, MPI_COMM_WORLD);
             break;
         }
 
         if (rank + step < size) {
+            ////// the receiver process needs to get the sender chunk size first
             int received_chunk_size;
             MPI_Recv(&received_chunk_size, 1, MPI_INT, rank + step, 0, MPI_COMM_WORLD, &status);
+            
+            ////// memory allocation for the data chunk to be received
             data_t *chunk_received = (data_t *)malloc(received_chunk_size * sizeof(data_t));
             if (chunk_received == NULL) {
                 fprintf(stderr, "Error: Unable to allocate memory to receive data on rank %d.\n", rank + step);
                 MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
             }
+
+            ////// the receiver gets the data
             MPI_Recv(chunk_received, received_chunk_size, mpi_data_type, rank + step, 1, MPI_COMM_WORLD, &status);
 
-            merge(&mydata, own_chunk_size, chunk_received, received_chunk_size);
+            ////// the received data is merged with the data owned by the receiver 
+            merge(&mydata, myN, chunk_received, received_chunk_size);
+            
+            ////// the memory allocated for the received data is freed and the owned chunk size is updated
             free(chunk_received);
-            own_chunk_size = own_chunk_size + received_chunk_size;
+            myN = myN + received_chunk_size;
         }
     }
 
     MPI_Barrier(MPI_COMM_WORLD);
+    end_time = MPI_Wtime();
+    
     if (rank == 0) {
-        file = fopen("steps.log", "a");
-        if (file == NULL) {
-            perror("Error opening file");
-            return EXIT_FAILURE;
-        }
-        fprintf(file, "Merging ended\n");
-        get_meminfo(&total_mem, &free_mem, &available_mem, &buffers, &cached, &total_swap, &free_swap);
-        fprintf(file, "               total        used        free      shared  buff/cache   available\n");
-        fprintf(file, "Mem:       %8lu  %8lu  %8lu  %8lu  %8lu  %8lu\n",
-                total_mem, used_mem, free_mem, 0UL, buff_cache, available_mem);
-        fprintf(file, "Swap:      %8lu  %8lu  %8lu\n", total_swap, total_swap - free_swap, free_swap);
-        fclose(file);
+        print_memory_info("\nMerging ended-----------", false);
     }
     end_time = MPI_Wtime();
 
     // Correctness check and time printing
     if (rank == 0) {
         if (verify_sorting(mydata, 0, N, 0)) {
-            printf("%d\t\t%d", size, N);
-            if (N >= 10000000)
-                printf("\t");
-            else
-                printf("\t\t");
-            printf("%.6f\t%.6f\t%.6f\t%.6f\n", end_time - init_time, scatter_time - init_time, sorting_time - scatter_time, end_time - sorting_time);
+            // show_array(mydata, 0, N, 0);
+            print_results(size, N, init_time, scatter_time, sorting_time, end_time);
         } else {
             printf("the array is not sorted correctly\n");
         }
     }
 
+    // each process frees the memory allocated for its own chunk of data
     free(mydata);
 
     MPI_Finalize();
     return 0;
 }
+
 
 
 //FUNCTION DEFINITIONS//
@@ -426,14 +358,44 @@ int verify_partitioning( data_t *data, int start, int end, int mid )
 }
 
 
-double median_of_three(double a, double b, double c) {
-  if ((a > b) != (a > c)) {
-    return a;
-  } else if ((b > a) != (b > c)) {
-      return b;
-  } else {
-      return c;
-  }
+int show_array( data_t *data, int start, int end, int not_used )
+{
+  for ( int i = start; i < end; i++ )
+    printf( "%f ", data[i].data[HOT] );
+  printf("\n");
+  return 0;
+}
+
+
+void quicksort( data_t *data, int start, int end, compare_t cmp_ge )
+{
+
+ #if defined(DEBUG)
+ #define CHECK {							\
+    if ( verify_partitioning( data, start, end, mid ) ) {		\
+      printf( "partitioning is wrong\n");				\
+      printf("%4d, %4d (%4d, %g) -> %4d, %4d  +  %4d, %4d\n",		\
+	     start, end, mid, data[mid].data[HOT],start, mid, mid+1, end); \
+      }}
+ #else
+ #define CHECK
+ #endif
+
+  int size = end-start;
+  if ( size > 2 )
+    {
+      int mid = partitioning( data, start, end, cmp_ge );
+
+      CHECK;
+      
+      quicksort( data, start, mid, cmp_ge );    // sort the left half
+      quicksort( data, mid+1, end , cmp_ge );   // sort the right half
+    }
+  else
+    {
+      if ( (size == 2) && cmp_ge ( (void*)&data[start], (void*)&data[end-1] ) )
+	SWAP( (void*)&data[start], (void*)&data[end-1], sizeof(data_t) );
+    }
 }
 
 
@@ -488,35 +450,14 @@ void generate_data(data_t *data, const int N)
 }
 
 
-void quicksort( data_t *data, int start, int end, compare_t cmp_ge )
-{
-
- #if defined(DEBUG)
- #define CHECK {							\
-    if ( verify_partitioning( data, start, end, mid ) ) {		\
-      printf( "partitioning is wrong\n");				\
-      printf("%4d, %4d (%4d, %g) -> %4d, %4d  +  %4d, %4d\n",		\
-	     start, end, mid, data[mid].data[HOT],start, mid, mid+1, end); \
-      }}
- #else
- #define CHECK
- #endif
-
-  int size = end-start;
-  if ( size > 2 )
-    {
-      int mid = partitioning( data, start, end, cmp_ge );
-
-      CHECK;
-      
-      quicksort( data, start, mid, cmp_ge );    // sort the left half
-      quicksort( data, mid+1, end , cmp_ge );   // sort the right half
-    }
-  else
-    {
-      if ( (size == 2) && cmp_ge ( (void*)&data[start], (void*)&data[end-1] ) )
-	SWAP( (void*)&data[start], (void*)&data[end-1], sizeof(data_t) );
-    }
+double median_of_three(double a, double b, double c) {
+  if ((a > b) != (a > c)) {
+    return a;
+  } else if ((b > a) != (b > c)) {
+      return b;
+  } else {
+      return c;
+  }
 }
 
 
@@ -605,3 +546,45 @@ void get_meminfo(unsigned long *total_mem, unsigned long *free_mem, unsigned lon
     
     fclose(file);
 }
+
+
+int print_memory_info(char * information_string, bool print_all) 
+{
+    unsigned long total_mem, free_mem, available_mem, buffers, cached;
+    unsigned long total_swap, free_swap;
+    unsigned long used_mem;
+    unsigned long buff_cache;
+    FILE *file = fopen("steps.log", "a");
+
+    if (file == NULL) {
+        perror("Error opening file");
+        return EXIT_FAILURE;
+    }
+
+    get_meminfo(&total_mem, &free_mem, &available_mem, &buffers, &cached, &total_swap, &free_swap);
+    
+    if (print_all) {
+        fprintf(file, "%s\n", information_string);
+        used_mem = total_mem - free_mem;
+        buff_cache = buffers + cached;
+        fprintf(file, "               total        used        free      shared  buff/cache   available\n");
+        fprintf(file, "Mem:       %8lu  %8lu  %8lu  %8lu  %8lu  %8lu\n",
+                total_mem, used_mem, free_mem, 0UL, buff_cache, available_mem);
+        fprintf(file, "Swap:      %8lu  %8lu  %8lu\n", total_swap, total_swap - free_swap, free_swap);
+    }
+    else {
+        fprintf(file, "%s%ld", information_string, free_mem);
+    }
+    fclose(file);
+}
+
+
+void print_results(int size, long int N, double init_time, double scatter_time, double sorting_time, double end_time) 
+{
+    printf("%d\t\t%ld", size, N);
+    if (N >= 10000000)
+        printf("\t");
+    else
+        printf("\t\t");
+    printf("%.6f\t%.6f\t%.6f\t%.6f\n", end_time - init_time, scatter_time - init_time, sorting_time - scatter_time, end_time - sorting_time);
+};
