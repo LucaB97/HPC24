@@ -108,7 +108,7 @@ void print_results(int , long int , double , double , double , double );
 
 int main(int argc, char **argv) {
     
-    // print_memory_info("\nRun started-------------", false);
+    print_memory_info("\nRun started-------------", false);
 
     int N = N_dflt;
     /* check command-line arguments */
@@ -164,10 +164,6 @@ int main(int argc, char **argv) {
     MPI_Type_contiguous(DATA_SIZE, MPI_DOUBLE, &mpi_data_type);
     MPI_Type_commit(&mpi_data_type);
 
-
-    if (rank == 0) {
-        print_memory_info("\nAllocation started------", false);
-    }
     // Each process defines its chunk size and allocated memory for it
     int own_sizes[size];
     int total_sizes[size];
@@ -195,9 +191,9 @@ int main(int argc, char **argv) {
 
     // Root process distributes the data to all the other processes
     if (rank == 0) {
-
-        print_memory_info("\nGeneration started------", false);
+        
         //// Memory allocation
+        print_memory_info("\nAllocation started------", false);
         data_t *data = (data_t*)malloc(N * sizeof(data_t));
         if (data == NULL) {
             fprintf(stderr, "Error: Unable to allocate memory for data on rank %d.\n", rank);
@@ -205,6 +201,7 @@ int main(int argc, char **argv) {
         }
 
         //// Data generation
+        print_memory_info("\nGeneration started------", false);
         generate_data(data, N);
         print_memory_info("\nGeneration ended--------", false);
 
