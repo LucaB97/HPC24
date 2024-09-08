@@ -108,7 +108,7 @@ void print_results(int , long int , double , double , double , double );
 
 int main(int argc, char **argv) {
     
-    print_memory_info("\nRun started-------------", false);
+    //print_memory_info("\nRun started-------------", false);
 
     int N = N_dflt;
     /* check command-line arguments */

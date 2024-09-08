@@ -33,6 +33,9 @@ do
     done
 done
 
-mv strong.txt results/
 module purge
+mv Strong.txt results/
+mv steps.log results/Strong_mem_usage.log
 rm qsort
+rm memory
+rm memory_req
