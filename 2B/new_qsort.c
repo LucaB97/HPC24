@@ -189,8 +189,18 @@ int main(int argc, char **argv) {
     }
 
     data_t *mydata = (data_t*)malloc(total_sizes[rank] * sizeof(data_t));
+    if (mydata == NULL) {
+      fprintf(stderr, "Error: Unable to allocate memory for mydata on rank %d.\n", rank);
+      MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+    }
+
+    data_t *receive_buffer = NULL;
     if (total_sizes[rank] > own_sizes[rank]) {
-        data_t *receive_buffer = (data_t*)malloc(int(total_sizes[rank]/2 + 1) * sizeof(data_t));
+        receive_buffer = (data_t*)malloc((total_sizes[rank]/2 + 1) * sizeof(data_t));
+        if (receive_buffer == NULL) {
+	  fprintf(stderr, "Error: Unable to allocate memory for receive_buffer on rank %d.\n", rank);
+	  MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+	}
     }
 
     // Root process distributes the data to all the other processes
@@ -257,9 +267,7 @@ int main(int argc, char **argv) {
         if (rank % (2 * step) != 0) {
             ////// the sender process sends its data and exits the loop
             MPI_Send(mydata, own_sizes[rank], mpi_data_type, rank - step, 1, MPI_COMM_WORLD);
-            if (total_sizes[rank] > own_sizes[rank]) {
-                free(receive_buffer);
-            }
+            free(receive_buffer);
             break;
         }
 
@@ -268,7 +276,7 @@ int main(int argc, char **argv) {
             MPI_Recv(receive_buffer, total_sizes[rank+step], mpi_data_type, rank + step, 1, MPI_COMM_WORLD, &status);
 
             ////// the received data is merged with the data owned by the receiver 
-            merge(mydata, own_sizes[rank], chunk_received, total_sizes[rank+step]);
+            merge(mydata, own_sizes[rank], receive_buffer, total_sizes[rank+step]);
             
             ////// the memory allocated for the received data is freed and the owned chunk size is updated
             // free(chunk_received);
