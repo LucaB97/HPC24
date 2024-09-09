@@ -164,11 +164,13 @@ int main(int argc, char **argv) {
     MPI_Type_contiguous(DATA_SIZE, MPI_DOUBLE, &mpi_data_type);
     MPI_Type_commit(&mpi_data_type);
 
-
     if (rank == 0) {
         print_memory_info("\nAllocation started------", false);
     }
-    // Each process defines its chunk size and allocated memory for it
+
+    // Definition of two arrays to store, for each process:
+    // own_size, assuming that the data will be distributed uniformly across the processes,
+    // total_size, considering the data the process will receive from others in the merge phase later
     int own_sizes[size];
     int total_sizes[size];
     bool sent[size];
@@ -188,19 +190,25 @@ int main(int argc, char **argv) {
         }
     }
 
+    // Each process allocates an array with size = total_size
+    // Although not necessary now, this choice avoids future reallocations improving memory locality and reducing data fragmentation
     data_t *mydata = (data_t*)malloc(total_sizes[rank] * sizeof(data_t));
     if (mydata == NULL) {
       fprintf(stderr, "Error: Unable to allocate memory for mydata on rank %d.\n", rank);
       MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
     }
-
+    
+    // Each process also allocates an array for the data to be received, with size = total size/2 + 1
+    // The reason is that this is the maximum number of entries the process will receive
+    // Since one process might receive data in more than one merging step, 
+    // here it is preferred to allocate the maximum required dimension once at the beginning, instead of allocating and freeing memory multiple times latere
     data_t *receive_buffer = NULL;
     if (total_sizes[rank] > own_sizes[rank]) {
         receive_buffer = (data_t*)malloc((total_sizes[rank]/2 + 1) * sizeof(data_t));
         if (receive_buffer == NULL) {
-	  fprintf(stderr, "Error: Unable to allocate memory for receive_buffer on rank %d.\n", rank);
-	  MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
-	}
+	        fprintf(stderr, "Error: Unable to allocate memory for receive_buffer on rank %d.\n", rank);
+	        MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+	    }
     }
 
     // Root process distributes the data to all the other processes
@@ -278,12 +286,16 @@ int main(int argc, char **argv) {
             ////// the received data is merged with the data owned by the receiver 
             merge(mydata, own_sizes[rank], receive_buffer, total_sizes[rank+step]);
             
-            ////// the memory allocated for the received data is freed and the owned chunk size is updated
-            // free(chunk_received);
+            ////// the owned chunk size is updated
             own_sizes[rank] += total_sizes[rank+step];
         }
     }
 
+
+    // the processes can start freeing their data when the break from the previous loop
+    if (rank != 0) {
+        free(mydata);
+    }
     MPI_Barrier(MPI_COMM_WORLD);
     end_time = MPI_Wtime();
     
@@ -300,10 +312,11 @@ int main(int argc, char **argv) {
         } else {
             printf("the array is not sorted correctly\n");
         }
+        free(mydata);
     }
 
     // each process frees the memory allocated for its own chunk of data
-    free(mydata);
+    //free(mydata);
 
     MPI_Finalize();
     return 0;
