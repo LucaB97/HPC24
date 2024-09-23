@@ -1,8 +1,5 @@
 #/usr/bin/bash
 
-X=$(date +%m-%d--%H-%M)
-mkdir tests/$X
-
 ## get info for the execution
 node=$1
 cpus=$2
@@ -11,17 +8,17 @@ repetitions=$3
 ## these parameters will be generated randomly at each repetition:
 ## the idea is to find out if it is possible to study the impact of **total iterations** and **warmup iterations**
 ## on performances independently on the specific execution 
-OPERATIONS=("bcast" "scatter" "gather" "reduce")
-ALGS=(0 1 2 3)
-MAPPINGS=("core" "L3cache" "numa" "socket")
+OPERATIONS=("bcast" "reduce")
+ALGS=(0 1 3 4)
+MAPPINGS=("core" "numa" "node")
 
 size_operations=${#OPERATIONS[@]}
 size_algs=${#ALGS[@]}
 size_mappings=${#MAPPINGS[@]}
 
 ## all the combinations of the following two variables values will be used
-ITERATIONS=(10000 50000)
-WARMUP=(200 1000)
+ITERATIONS=(10000 100000)
+WARMUP=(200 2000)
 
 
 module purge
@@ -60,6 +57,6 @@ Mapping: $curr_mapping
     done
     printf "\n"
     rm curr_results_{$R}.txt
-    mv "test__${R}.txt" ../parameters_study/iterations/$X/
+    mv "test__${R}.txt" ../parameters_study/iterations/tests/
 done
 
