@@ -13,4 +13,4 @@ SIZE=$1
 #REP=$2
 
 # ./strong_scal.sh 2 $SIZE $REP
-./weak_scal.sh 2 $SIZE
+./weak_scal2.sh 1 $SIZE
