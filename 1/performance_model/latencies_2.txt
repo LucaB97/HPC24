@@ -1,115 +1,24 @@
-Message to core: 1
-# OSU MPI Latency Test v7.3
-# Size          Latency (us)
-# Datatype: MPI_CHAR.
-2                       0.19
-Message to core: 2
-# OSU MPI Latency Test v7.3
-# Size          Latency (us)
-# Datatype: MPI_CHAR.
-2                       0.19
-Message to core: 3
-# OSU MPI Latency Test v7.3
-# Size          Latency (us)
-# Datatype: MPI_CHAR.
-2                       0.19
-Message to core: 4
-# OSU MPI Latency Test v7.3
-# Size          Latency (us)
-# Datatype: MPI_CHAR.
-2                       0.19
-Message to core: 5
-# OSU MPI Latency Test v7.3
-# Size          Latency (us)
-# Datatype: MPI_CHAR.
-2                       0.19
-Message to core: 6
-# OSU MPI Latency Test v7.3
-# Size          Latency (us)
-# Datatype: MPI_CHAR.
-2                       0.19
-Message to core: 7
-# OSU MPI Latency Test v7.3
-# Size          Latency (us)
-# Datatype: MPI_CHAR.
-2                       0.19
-Message to core: 8
-# OSU MPI Latency Test v7.3
-# Size          Latency (us)
-# Datatype: MPI_CHAR.
-2                       0.19
-Message to core: 9
-# OSU MPI Latency Test v7.3
-# Size          Latency (us)
-# Datatype: MPI_CHAR.
-2                       0.19
-Message to core: 10
-# OSU MPI Latency Test v7.3
-# Size          Latency (us)
-# Datatype: MPI_CHAR.
-2                       0.19
-Message to core: 11
-# OSU MPI Latency Test v7.3
-# Size          Latency (us)
-# Datatype: MPI_CHAR.
-2                       0.20
-Message to core: 12
-# OSU MPI Latency Test v7.3
-# Size          Latency (us)
-# Datatype: MPI_CHAR.
-2                       0.40
-Message to core: 13
-# OSU MPI Latency Test v7.3
-# Size          Latency (us)
-# Datatype: MPI_CHAR.
-2                       0.41
-Message to core: 14
-# OSU MPI Latency Test v7.3
-# Size          Latency (us)
-# Datatype: MPI_CHAR.
-2                       0.40
-Message to core: 15
-# OSU MPI Latency Test v7.3
-# Size          Latency (us)
-# Datatype: MPI_CHAR.
-2                       0.40
-Message to core: 16
-# OSU MPI Latency Test v7.3
-# Size          Latency (us)
-# Datatype: MPI_CHAR.
-2                       0.40
-Message to core: 17
-# OSU MPI Latency Test v7.3
-# Size          Latency (us)
-# Datatype: MPI_CHAR.
-2                       0.40
-Message to core: 18
-# OSU MPI Latency Test v7.3
-# Size          Latency (us)
-# Datatype: MPI_CHAR.
-2                       0.41
-Message to core: 19
-# OSU MPI Latency Test v7.3
-# Size          Latency (us)
-# Datatype: MPI_CHAR.
-2                       0.40
-Message to core: 20
-# OSU MPI Latency Test v7.3
-# Size          Latency (us)
-# Datatype: MPI_CHAR.
-2                       0.41
-Message to core: 21
-# OSU MPI Latency Test v7.3
-# Size          Latency (us)
-# Datatype: MPI_CHAR.
-2                       0.41
-Message to core: 22
-# OSU MPI Latency Test v7.3
-# Size          Latency (us)
-# Datatype: MPI_CHAR.
-2                       0.41
-Message to core: 23
-# OSU MPI Latency Test v7.3
-# Size          Latency (us)
-# Datatype: MPI_CHAR.
-2                       0.40
+Rank ID	Latency (us)
+1	0.21
+2	0.20
+3	0.20
+4	0.19
+5	0.20
+6	0.20
+7	0.20
+8	0.20
+9	0.19
+10	0.20
+11	0.19
+12	0.41
+13	0.42
+14	0.41
+15	0.40
+16	0.40
+17	0.41
+18	0.41
+19	0.40
+20	0.41
+21	0.41
+22	0.41
+23	0.40

@@ -10,14 +10,14 @@ repetitions=$3
 ## on performances independently on the specific execution 
 OPERATIONS=("reduce")
 ALGS=(0 1 3 4)
-MAPPINGS=("numa" "node")
+MAPPINGS=("core" "numa" "node")
 
 size_operations=${#OPERATIONS[@]}
 size_algs=${#ALGS[@]}
 size_mappings=${#MAPPINGS[@]}
 
 ## all the combinations of the following two variables values will be used
-ITERATIONS=(10000 100000)
+ITERATIONS=(10000 50000)
 WARMUP=(200 2000)
 
 
@@ -47,12 +47,12 @@ Mapping: $curr_mapping
     do
         for W in "${WARMUP[@]}" 
         do  
-            if [ "$I" -eq "${ITERATIONS[0]}" ] || [ "$W" -eq "${WARMUP[0]}" ]; then
-		printf "\nIterations: $I    Warmup: $W"
-		printf "\nIterations: $I\nWarmup: $W" >> "test__${R}.txt"
-            	mpirun -np $cpus --map-by $curr_mapping --mca coll_tuned_use_dynamic_rules true --mca coll_tuned_${curr_operation}_algorithm $curr_alg osu_${curr_operation} -m 256:524288 -f -z -i $I -x $W > "curr_results_{$R}.txt"
-            	cat "curr_results_{$R}.txt" >> "test__${R}.txt"
-            fi
+            # if [ "$I" -eq "${ITERATIONS[0]}" ] || [ "$W" -eq "${WARMUP[0]}" ]; then
+	    printf "\nIterations: $I    Warmup: $W"
+	    printf "\nIterations: $I\nWarmup: $W" >> "test__${R}.txt"
+            mpirun -np $cpus --map-by $curr_mapping --mca coll_tuned_use_dynamic_rules true --mca coll_tuned_${curr_operation}_algorithm $curr_alg osu_${curr_operation} -m 256:524288 -f -z -i $I -x $W > "curr_results_{$R}.txt"
+            cat "curr_results_{$R}.txt" >> "test__${R}.txt"
+            # fi
 	done
     done
     printf "\n"
