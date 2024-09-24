@@ -12,13 +12,13 @@ def main(test_file):
     mapping = data['Mapping'].unique()
 
     # Set up a list of unique iteration and warmup values
-    iterations_values = [10000, 50000]  # Focus on 10000 and 50000 for iterations
+    iterations_values = [10000, 100000]  # Focus on 10000 and 100000 for iterations
     warmup_values = [200, 1000]         # Focus on 200 and 1000 for warmup
 
     # Define specific colors for different parameter configurations
     color_mapping = {
         10000: 'blue',   
-        50000: 'red', 
+        100000: 'red', 
         200: 'purple',  
         1000: 'yellow',    
     }
