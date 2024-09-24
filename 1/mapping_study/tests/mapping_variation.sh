@@ -26,4 +26,4 @@ do
 done
 
 cd ../mapping_study/tests/
-bash results_to_plots.sh $operation $algorithms
+# bash results_to_plots.sh $operation $algorithms
