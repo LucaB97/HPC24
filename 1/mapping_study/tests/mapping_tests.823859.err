@@ -1,3 +1,0 @@
-mkdir: cannot create directory ‘thin/’: File exists
-mkdir: cannot create directory ‘thin/bcast’: File exists
-bash: results_to_plots.sh: No such file or directory

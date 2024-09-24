@@ -8,9 +8,9 @@ repetitions=$3
 ## these parameters will be generated randomly at each repetition:
 ## the idea is to find out if it is possible to study the impact of **total iterations** and **warmup iterations**
 ## on performances independently on the specific execution 
-OPERATIONS=("bcast" "reduce")
+OPERATIONS=("reduce")
 ALGS=(0 1 3 4)
-MAPPINGS=("core" "numa" "node")
+MAPPINGS=("numa" "node")
 
 size_operations=${#OPERATIONS[@]}
 size_algs=${#ALGS[@]}

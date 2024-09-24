@@ -1,13 +1,12 @@
 #usr/bin/bash
 
-node=$1
-operation=$2
-algorithms=("${@:3}")
+operation=$1
+algorithms=("${@:2}")
 
 c++ createCSV.cpp -o createCSV
-mv createCSV ../$node/$operation/
-cp plot_generator.py ../$node/$operation/
-cd ../$node/$operation/
+mv createCSV results/$operation/
+cp plot_generator.py results/$operation/
+cd results/$operation/
 mkdir plots/
 
 for A in "${algorithms[@]}"
