@@ -12,9 +12,10 @@ data_size=$(./memory_req)  # Size of each data entry in bytes
 max_segment_size=$(echo "scale=0; 0.25 * 1024 * $free_memory / (3 * $data_size)" | bc)
 printf "max segment size: $max_segment_size\n"
 
-if [ $SIZE -ge $max_segment_size ]; then
-    SIZE=$max_segment_size
-fi
+SIZE=$max_segment_size
+#if [ $SIZE -ge $max_segment_size ]; then
+#    SIZE=$max_segment_size
+#fi
 
 ##load modules & create executable for the algorithm
 module purge

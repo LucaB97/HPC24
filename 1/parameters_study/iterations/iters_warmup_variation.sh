@@ -18,7 +18,7 @@ size_mappings=${#MAPPINGS[@]}
 
 ## all the combinations of the following two variables values will be used
 ITERATIONS=(10000 50000)
-WARMUP=(200 2000)
+WARMUP=(200 1000)
 
 
 module purge
