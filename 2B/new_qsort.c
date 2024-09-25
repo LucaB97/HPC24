@@ -92,7 +92,8 @@ extern inline int partitioning( data_t *, int, int, compare_t );
 
 void generate_data(data_t *, const int );
 double median_of_three(double, double, double );                  // needed for the pivot 
-void merge( data_t *, const int, const data_t *, const int ); 
+// void merge( data_t *, const int, const data_t *, const int ); 
+void merge( data_t *, int, const data_t *, int, int); 
 
 void get_meminfo(unsigned long *, unsigned long *, unsigned long *,
                  unsigned long *, unsigned long *, unsigned long *,
@@ -144,7 +145,7 @@ int main(int argc, char **argv) {
 
         if (verify_sorting(data, 0, N, 0)) {
             // show_array(data, 0, N, 0);
-            print_results(size, N, init_time, 0, 0, end_time);
+            print_results(size, N, init_time, 0, end_time, end_time);
         } else {
             printf("the array is not sorted correctly\n");
         }
@@ -190,9 +191,12 @@ int main(int argc, char **argv) {
         }
     }
 
+    int my_own_size = own_sizes[rank];
+    int my_total_size = total_sizes[rank];
+
     // Each process allocates an array with size = total_size
     // Although not necessary now, this choice avoids future reallocations improving memory locality and reducing data fragmentation
-    data_t *mydata = (data_t*)malloc(total_sizes[rank] * sizeof(data_t));
+    data_t *mydata = (data_t*)malloc(my_total_size * sizeof(data_t));
     if (mydata == NULL) {
       fprintf(stderr, "Error: Unable to allocate memory for mydata on rank %d.\n", rank);
       MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
@@ -203,8 +207,8 @@ int main(int argc, char **argv) {
     // Since one process might receive data in more than one merging step, 
     // here it is preferred to allocate the maximum required dimension once at the beginning, instead of allocating and freeing memory multiple times latere
     data_t *receive_buffer = NULL;
-    if (total_sizes[rank] > own_sizes[rank]) {
-        receive_buffer = (data_t*)malloc((total_sizes[rank]/2 + 1) * sizeof(data_t));
+    if (my_total_size > my_own_size) {
+        receive_buffer = (data_t*)malloc((my_total_size/2 + 1) * sizeof(data_t));
         if (receive_buffer == NULL) {
 	        fprintf(stderr, "Error: Unable to allocate memory for receive_buffer on rank %d.\n", rank);
 	        MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
@@ -240,11 +244,12 @@ int main(int argc, char **argv) {
             if (i > 0) {
                 displs[i] = i * (N / size) + min(i, N % size);
             }
+            printf("\n");
         }
 
         ////// efficient distribution using MPI_Scatterv
-        print_memory_info("\nDistribution started----", false);
-        MPI_Scatterv(data, sendcounts, displs, mpi_data_type, mydata, N, mpi_data_type, 0, MPI_COMM_WORLD);        
+        print_memory_info("\nDistribution started----", false);    
+        MPI_Scatterv(data, sendcounts, displs, mpi_data_type, &mydata[my_total_size-my_own_size], sendcounts[rank], mpi_data_type, 0, MPI_COMM_WORLD);   
         print_memory_info("\nDistribution ended------", false);
 
         //// Freeing the memory used to hold the whole data on the root process
@@ -255,11 +260,11 @@ int main(int argc, char **argv) {
     } else {
         ////MPI_Scatterv is a collective operation, thus all processes in the communicator (MPI_COMM_WORLD) must call it
         ////however, non-root processes are not performing the data distribution, so they pass NULL for sendbuf, sendcounts, and displs
-        MPI_Scatterv(NULL, NULL, NULL, mpi_data_type, mydata, own_sizes[rank], mpi_data_type, 0, MPI_COMM_WORLD);
+        MPI_Scatterv(NULL, NULL, NULL, mpi_data_type, &mydata[my_total_size-my_own_size], own_sizes[rank], mpi_data_type, 0, MPI_COMM_WORLD);
     }    
 
     // SORTING
-    quicksort(mydata, 0, own_sizes[rank], compare_ge);
+    quicksort(mydata, my_total_size-my_own_size, my_total_size, compare_ge);
     MPI_Barrier(MPI_COMM_WORLD);
     sorting_time = MPI_Wtime();
 
@@ -284,7 +289,8 @@ int main(int argc, char **argv) {
             MPI_Recv(receive_buffer, total_sizes[rank+step], mpi_data_type, rank + step, 1, MPI_COMM_WORLD, &status);
 
             ////// the received data is merged with the data owned by the receiver 
-            merge(mydata, own_sizes[rank], receive_buffer, total_sizes[rank+step]);
+            // merge(mydata, own_sizes[rank], receive_buffer, total_sizes[rank+step]);
+            merge(mydata, own_sizes[rank], receive_buffer, total_sizes[rank+step], total_sizes[rank]);
             
             ////// the owned chunk size is updated
             own_sizes[rank] += total_sizes[rank+step];
@@ -293,9 +299,11 @@ int main(int argc, char **argv) {
 
 
     // the processes can start freeing their data when the break from the previous loop
+    // Ensure that only the necessary pointer is freed after merging
     if (rank != 0) {
         free(mydata);
     }
+
     MPI_Barrier(MPI_COMM_WORLD);
     end_time = MPI_Wtime();
     
@@ -314,9 +322,6 @@ int main(int argc, char **argv) {
         }
         free(mydata);
     }
-
-    // each process frees the memory allocated for its own chunk of data
-    //free(mydata);
 
     MPI_Finalize();
     return 0;
@@ -495,41 +500,74 @@ double median_of_three(double a, double b, double c) {
 }
 
 
-void merge(data_t *arr1, int n1, const data_t *arr2, int n2) {
-    int total_size = n1 + n2;
-    data_t *result = (data_t*)malloc(total_size * sizeof(data_t));
+// void merge(data_t *arr1, int n1, const data_t *arr2, int n2) {
+//     int total_size = n1 + n2;
+//     data_t *result = (data_t*)malloc(total_size * sizeof(data_t));
 
-    if (result == NULL) {
-        // Handle memory allocation failure (e.g., log error, exit, etc.)
-        fprintf(stderr, "Error: Unable to allocate memory for merging arrays.\n");
-        return;
-    }
+//     if (result == NULL) {
+//         // Handle memory allocation failure (e.g., log error, exit, etc.)
+//         fprintf(stderr, "Error: Unable to allocate memory for merging arrays.\n");
+//         return;
+//     }
+
+//     int i = 0, j = 0, k = 0;
+
+//     // Merging arrays
+//     while (i < n1 && j < n2) {
+//         if (arr1[i].data[HOT] <= arr2[j].data[HOT]) {
+//             result[k++] = arr1[i++];
+//         } else {
+//             result[k++] = arr2[j++];
+//         }
+//     }
+
+//     // Copy remaining elements
+//     while (i < n1) {
+//         result[k++] = arr1[i++];
+//     }
+//     while (j < n2) {
+//         result[k++] = arr2[j++];
+//     }
+
+//     // Copy the merged data into the resized array
+//     memcpy(arr1, result, total_size * sizeof(data_t));
+
+//     // Free the temporary result array
+//     free(result);
+// }
+
+void merge(data_t *arr1, int n1, const data_t *arr2, int n2, int tot_n1) {
+    int merged_size = n1 + n2;
+    int starting_point = tot_n1 - n1 - n2;
 
     int i = 0, j = 0, k = 0;
 
     // Merging arrays
     while (i < n1 && j < n2) {
-        if (arr1[i].data[HOT] <= arr2[j].data[HOT]) {
-            result[k++] = arr1[i++];
+        if (arr1[starting_point+n2+i].data[HOT] <= arr2[j].data[HOT]) {
+            arr1[starting_point+k] = arr1[starting_point+n2+i];
+            i++;
         } else {
-            result[k++] = arr2[j++];
+            arr1[starting_point+k] = arr2[j];
+            j++;
         }
+        k++;
     }
 
     // Copy remaining elements
     while (i < n1) {
-        result[k++] = arr1[i++];
+        arr1[starting_point+k] = arr1[starting_point+n2+i];
+        i++;
+        k++;
     }
     while (j < n2) {
-        result[k++] = arr2[j++];
+        arr1[starting_point+k] = arr2[j];
+        j++;
+        k++;
     }
-
-    // Copy the merged data into the resized array
-    memcpy(arr1, result, total_size * sizeof(data_t));
-
-    // Free the temporary result array
-    free(result);
 }
+
+
 
 
 // Function to read and parse /proc/meminfo into various memory metrics
