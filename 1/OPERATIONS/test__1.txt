@@ -1,0 +1,10 @@
+Node: THIN     CPUS: 48
+
+--------------------------------------------
+Operation: reduce
+Algorithm: 3
+Mapping: numa
+--------------------------------------------
+
+Iterations: 10000
+Warmup: 200

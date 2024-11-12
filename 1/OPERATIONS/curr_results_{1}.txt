@@ -1,0 +1,4 @@
+
+# OSU MPI Reduce Latency Test v7.3
+# Datatype: MPI_CHAR.
+# Size       Avg Latency(us)   Min Latency(us)   Max Latency(us)  Iterations  P50 Tail Lat(us)  P95 Tail Lat(us)  P99 Tail Lat(us)
