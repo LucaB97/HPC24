@@ -5,12 +5,9 @@
 #endif
 #include <stdlib.h>
 #include <stdbool.h>
-#include <unistd.h>
 #include <stdio.h>
-#include <math.h>
 #include <string.h>
 #include <time.h>
-#include <sys/time.h> // for gettimeofday
 #include <mpi.h>
 
 
@@ -18,36 +15,8 @@
 //  MACROS and DATATYPES
 // ================================================================
 #define BUF_SIZE 256
-#define KB_TO_MB(x) ((x) / 1024)
 
-// measure ther cpu process time
-#define CPU_TIME (clock_gettime( CLOCK_PROCESS_CPUTIME_ID, &ts ), (double)ts.tv_sec + \
-                  (double)ts.tv_nsec * 1e-9)
-
-#if defined(DEBUG)
-#define VERBOSE
-#endif
-
-#if defined(VERBOSE)
-#define PRINTF(...) printf(__VA_ARGS__)
-#else
-#define PRINTF(...)
-#endif
-
-// The data to be sorted consists in a structure, just to mimic that you
-// may have to sort not basic types, whch may have some effects on the memory efficiency.
-// The structure, defined below as data_t is just an array of DATA_SIZE double,
-// where DATA_SIZE is defined here below.
-// However, for the sake of simplicity, we assume that we sort with respect one of
-// the double in each structure, the HOTst one, where HOT is defined below (my
-// choice was to set HOT to 0, so the code will use the first double to sort the data).
-
-#if !defined(DATA_SIZE)
-#define DATA_SIZE 8
-#endif
-#define HOT       0
-
-// let's define the default amount of data
+// default amount of data
 //
 #if (!defined(DEBUG))
 #define N_dflt    100000
@@ -55,44 +24,48 @@
 #define N_dflt    10000
 #endif
 
-// let's define the data_t type
+// The structure, defined below as data_t is just an array of DATA_SIZE double, where DATA_SIZE is defined here below.
+// We assume that we sort with respect one of the double in each structure, the HOTst one.
 //
+#if !defined(DATA_SIZE)
+#define DATA_SIZE 8
+#endif
+#define HOT       0
+
 typedef struct
 {
   double data[DATA_SIZE];
 } data_t;
 
-
-// let's defined convenient macros for max and min between
-// two data_t objects
-//
-#define MAX( a, b ) ( (a)->data[HOT] >(b)->data[HOT]? (a) : (b) );
-#define MIN( a, b ) ( (a)->data[HOT] <(b)->data[HOT]? (a) : (b) );
-
 #define min(a, b) (((a) < (b)) ? (a) : (b));
+
+
 // ================================================================
 //  PROTOTYPES
 // ================================================================
 
-// let'ìs define the compare funciton that will be used by the sorting routine//
+// compare function type, used by the sorting routine
+//
 typedef int (compare_t)(const void*, const void*);
 
-// let's define the verifying function type, used to test the results//
+// verifying function type, used to test the results
+//
 typedef int (verify_t)(data_t *, int, int, int);
 
-// declare the functions//
+// declare the functions
+//
 extern inline compare_t compare;        // the compare function
 extern inline compare_t compare_ge;     // the compare for "greater or equal"
 verify_t  verify_partitioning;          // verification functions
 verify_t  verify_sorting;
 verify_t  show_array;
 
+
 void quicksort( data_t *, int, int, compare_t ); 
 extern inline int partitioning( data_t *, int, int, compare_t );
 
 void generate_data(data_t *, const int );
 double median_of_three(double, double, double );                  // needed for the pivot 
-// void merge( data_t *, const int, const data_t *, const int ); 
 void merge( data_t *, int, const data_t *, int, int); 
 
 void get_meminfo(unsigned long *, unsigned long *, unsigned long *,
@@ -103,16 +76,16 @@ int print_memory_info(char *, bool );
 
 void print_results(int , long int , double , double , double , double );
 
+
+
 // ================================================================
 //  CODE
 // ================================================================
 
 int main(int argc, char **argv) {
-    
-    // print_memory_info("\nRun started-------------", false);
-
     int N = N_dflt;
-    /* check command-line arguments */
+    // check command-line arguments
+    //
     {
         int a = 0;
         if (argc > ++a) N = atoi(*(argv+a));
@@ -126,10 +99,9 @@ int main(int argc, char **argv) {
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-
-    /////////////////////////
+       
+    // ======================
     // 1 MPI process
-    /////////////////////////
 
     if (size == 1) {
         data_t *data = (data_t*)malloc(N*sizeof(data_t));
@@ -156,9 +128,8 @@ int main(int argc, char **argv) {
     }
 
 
-    /////////////////////////
+    // ======================
     // Multiple MPI processes
-    /////////////////////////
 
     double scatter_time, sorting_time;
     MPI_Datatype mpi_data_type;
@@ -166,12 +137,21 @@ int main(int argc, char **argv) {
     MPI_Type_commit(&mpi_data_type);
 
     if (rank == 0) {
+        
+        FILE *file = fopen("steps.log", "a");
+        if (file == NULL) {
+            perror("Error opening file");
+            return EXIT_FAILURE;
+        }
+        fprintf(file, "\n\nNprocs=%d", size);
+        fclose(file);
         print_memory_info("\nAllocation started------", false);
     }
 
     // Definition of two arrays to store, for each process:
     // own_size, assuming that the data will be distributed uniformly across the processes,
     // total_size, considering the data the process will receive from others in the merge phase later
+    //
     int own_sizes[size];
     int total_sizes[size];
     bool sent[size];
@@ -196,16 +176,16 @@ int main(int argc, char **argv) {
 
     // Each process allocates an array with size = total_size
     // Although not necessary now, this choice avoids future reallocations improving memory locality and reducing data fragmentation
+    //
     data_t *mydata = (data_t*)malloc(my_total_size * sizeof(data_t));
     if (mydata == NULL) {
       fprintf(stderr, "Error: Unable to allocate memory for mydata on rank %d.\n", rank);
       MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
     }
     
-    // Each process also allocates an array for the data to be received, with size = total size/2 + 1
-    // The reason is that this is the maximum number of entries the process will receive
-    // Since one process might receive data in more than one merging step, 
-    // here it is preferred to allocate the maximum required dimension once at the beginning, instead of allocating and freeing memory multiple times latere
+    // Each process also allocates an array for the data to be received, with size = total size/2 + 1 = maximum number of entries the process will receive
+    // Since one process might receive data in more than one merging step, the maximum required memory is allocated all at once, instead of reallocating later
+    //
     data_t *receive_buffer = NULL;
     if (my_total_size > my_own_size) {
         receive_buffer = (data_t*)malloc((my_total_size/2 + 1) * sizeof(data_t));
@@ -216,10 +196,12 @@ int main(int argc, char **argv) {
     }
 
     // Root process distributes the data to all the other processes
+    //
     if (rank == 0) {
-
         print_memory_info("\nGeneration started------", false);
+        
         //// Memory allocation
+        ////
         data_t *data = (data_t*)malloc(N * sizeof(data_t));
         if (data == NULL) {
             fprintf(stderr, "Error: Unable to allocate memory for data on rank %d.\n", rank);
@@ -227,14 +209,16 @@ int main(int argc, char **argv) {
         }
 
         //// Data generation
+        ////
         generate_data(data, N);
         print_memory_info("\nGeneration ended--------", false);
 
         //// Execution time is computed from here
+        ////
         init_time = MPI_Wtime();
 
-        //// DATA DISTRIBUTION
-        ////// determination of the size and starting point of each chunk
+        //// Size and starting point of each chunk are determined
+        ////
         int displs[size];
         int sendcounts[size];
         displs[0] = 0;
@@ -244,62 +228,61 @@ int main(int argc, char **argv) {
             if (i > 0) {
                 displs[i] = i * (N / size) + min(i, N % size);
             }
-            printf("\n");
         }
 
-        ////// efficient distribution using MPI_Scatterv
+        //// Data distribution
+        ////
         print_memory_info("\nDistribution started----", false);    
         MPI_Scatterv(data, sendcounts, displs, mpi_data_type, &mydata[my_total_size-my_own_size], sendcounts[rank], mpi_data_type, 0, MPI_COMM_WORLD);   
         print_memory_info("\nDistribution ended------", false);
 
         //// Freeing the memory used to hold the whole data on the root process
+        ////
         free(data);
         print_memory_info("\nFreeing ended-----------", false);
         scatter_time = MPI_Wtime();
 
     } else {
-        ////MPI_Scatterv is a collective operation, thus all processes in the communicator (MPI_COMM_WORLD) must call it
-        ////however, non-root processes are not performing the data distribution, so they pass NULL for sendbuf, sendcounts, and displs
+        //// MPI_Scatterv is a collective operation, thus all processes in the communicator must call it
+        //// non-root processes pass NULL for sendbuf, sendcounts, and displs
+        ////
         MPI_Scatterv(NULL, NULL, NULL, mpi_data_type, &mydata[my_total_size-my_own_size], own_sizes[rank], mpi_data_type, 0, MPI_COMM_WORLD);
     }    
 
     // SORTING
+    //
     quicksort(mydata, my_total_size-my_own_size, my_total_size, compare_ge);
     MPI_Barrier(MPI_COMM_WORLD);
     sorting_time = MPI_Wtime();
 
-    // MERGING
     if (rank == 0) {
         print_memory_info("\nMerging started---------", false);
     }
 
-    
-    //// the merge operation is performed as an iterative binary tree-based reduction process (logarithmic steps)
+    // MERGING: iterative binary tree-based reduction process (logarithmic steps)
+    //
     for (int step = 1; step < size; step = 2 * step) {
 
         if (rank % (2 * step) != 0) {
-            ////// the sender process sends its data and exits the loop
+            //// A process sends its data and exits the loop
+            ////
             MPI_Send(mydata, own_sizes[rank], mpi_data_type, rank - step, 1, MPI_COMM_WORLD);
             free(receive_buffer);
             break;
         }
 
         if (rank + step < size) {            
-            ////// the receiver gets the data
+            //// The receiver gets the data and merges it with its own, then updates own chunk size
+            ////
             MPI_Recv(receive_buffer, total_sizes[rank+step], mpi_data_type, rank + step, 1, MPI_COMM_WORLD, &status);
-
-            ////// the received data is merged with the data owned by the receiver 
-            // merge(mydata, own_sizes[rank], receive_buffer, total_sizes[rank+step]);
             merge(mydata, own_sizes[rank], receive_buffer, total_sizes[rank+step], total_sizes[rank]);
-            
-            ////// the owned chunk size is updated
             own_sizes[rank] += total_sizes[rank+step];
         }
     }
 
 
-    // the processes can start freeing their data when the break from the previous loop
-    // Ensure that only the necessary pointer is freed after merging
+    // Each non-process frees its own data after exiting the merging phase
+    //
     if (rank != 0) {
         free(mydata);
     }
@@ -309,19 +292,17 @@ int main(int argc, char **argv) {
     
     if (rank == 0) {
         print_memory_info("\nMerging ended-----------", false);
-    }
-    end_time = MPI_Wtime();
-
-    // Correctness check and time printing
-    if (rank == 0) {
+        
         if (verify_sorting(mydata, 0, N, 0)) {
             // show_array(mydata, 0, N, 0);
             print_results(size, N, init_time, scatter_time, sorting_time, end_time);
         } else {
             printf("the array is not sorted correctly\n");
         }
+        
         free(mydata);
     }
+
 
     MPI_Finalize();
     return 0;
@@ -481,8 +462,7 @@ void generate_data(data_t *data, const int N)
   long int seed;
   seed = time(NULL);
   srand48(seed);
-    
-  PRINTF("ssed is % ld\n", seed);
+  //printf("ssed is % ld\n", seed);
     
   for ( int i = 0; i < N; i++ )
     data[i].data[HOT] = drand48();
@@ -500,74 +480,30 @@ double median_of_three(double a, double b, double c) {
 }
 
 
-// void merge(data_t *arr1, int n1, const data_t *arr2, int n2) {
-//     int total_size = n1 + n2;
-//     data_t *result = (data_t*)malloc(total_size * sizeof(data_t));
-
-//     if (result == NULL) {
-//         // Handle memory allocation failure (e.g., log error, exit, etc.)
-//         fprintf(stderr, "Error: Unable to allocate memory for merging arrays.\n");
-//         return;
-//     }
-
-//     int i = 0, j = 0, k = 0;
-
-//     // Merging arrays
-//     while (i < n1 && j < n2) {
-//         if (arr1[i].data[HOT] <= arr2[j].data[HOT]) {
-//             result[k++] = arr1[i++];
-//         } else {
-//             result[k++] = arr2[j++];
-//         }
-//     }
-
-//     // Copy remaining elements
-//     while (i < n1) {
-//         result[k++] = arr1[i++];
-//     }
-//     while (j < n2) {
-//         result[k++] = arr2[j++];
-//     }
-
-//     // Copy the merged data into the resized array
-//     memcpy(arr1, result, total_size * sizeof(data_t));
-
-//     // Free the temporary result array
-//     free(result);
-// }
-
 void merge(data_t *arr1, int n1, const data_t *arr2, int n2, int tot_n1) {
-    int merged_size = n1 + n2;
-    int starting_point = tot_n1 - n1 - n2;
 
-    int i = 0, j = 0, k = 0;
+    int arr1_start = tot_n1 - n1;
+    int merge_start = tot_n1 - n1 - n2;
+    int i = 0, j = 0, k = merge_start;
 
     // Merging arrays
     while (i < n1 && j < n2) {
-        if (arr1[starting_point+n2+i].data[HOT] <= arr2[j].data[HOT]) {
-            arr1[starting_point+k] = arr1[starting_point+n2+i];
+        if (arr1[arr1_start+i].data[HOT] <= arr2[j].data[HOT]) {
+            arr1[k] = arr1[arr1_start+i];
             i++;
         } else {
-            arr1[starting_point+k] = arr2[j];
+            arr1[k] = arr2[j];
             j++;
         }
         k++;
     }
 
-    // Copy remaining elements
-    while (i < n1) {
-        arr1[starting_point+k] = arr1[starting_point+n2+i];
-        i++;
-        k++;
-    }
     while (j < n2) {
-        arr1[starting_point+k] = arr2[j];
+        arr1[k] = arr2[j];
         j++;
         k++;
     }
 }
-
-
 
 
 // Function to read and parse /proc/meminfo into various memory metrics

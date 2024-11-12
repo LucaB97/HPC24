@@ -23,20 +23,20 @@ module load openMPI/4.1.6/gnu
 mpicc -O3 qsort.c -o qsort
 
 ##perform strong scalability test
-printf "Test\tProcesses\tSize\t\tTotal\t\tCommunication\tSorting\t\tMerging\n" > "Strong.txt"
+printf "Test\tProcesses\tSize\t\tTotal\t\tCommunication\tSorting\t\tMerging\n" > "strong.txt"
 
 for P in "${NUMPROCS[@]}"
 do
     for R in $(seq 1 $REPETITIONS)
     do
-        printf "$R\t" >> "Strong.txt"
-        mpirun -np $P ./qsort $SIZE >> "Strong.txt"
+        printf "$R\t" >> "strong.txt"
+        mpirun -np $P ./qsort $SIZE >> "strong.txt"
     done
 done
 
 module purge
-mv Strong.txt results/
-mv steps.log results/Strong_mem_usage.log
+mv strong.txt results/
+mv steps.log results/strong_mem_usage.log
 rm qsort
 rm memory
 rm memory_req
