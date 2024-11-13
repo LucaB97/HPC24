@@ -10,4 +10,4 @@
 
 message_size=$1
 
-./point-to-point.sh 24 $message_size 
+./point-to-point 24 $message_size 

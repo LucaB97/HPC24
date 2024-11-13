@@ -9,5 +9,5 @@
 
 module load hwloc/2.10.0
 
-lstopo-no-graphics --no-io --no-legend --of txt > "thin_topology.txt"
+#lstopo-no-graphics --no-io --no-legend --of txt > "thin_topology.txt"
 lscpu > "thin.txt"

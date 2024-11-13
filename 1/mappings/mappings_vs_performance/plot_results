@@ -1,0 +1,21 @@
+#usr/bin/bash
+
+operation=$1
+algorithms=("${@:2}")
+
+c++ create_csv.cpp -o create_csv
+mv create_csv results/$operation/
+cp generate_plots.py results/$operation/
+cd results/$operation/
+mkdir plots/
+
+for A in "${algorithms[@]}"
+do
+    ./create_csv "alg__$A.txt" "alg__$A.csv" 
+    python3 generate_plots.py "alg__$A"
+    rm "alg__$A.csv"
+done
+
+mv *png plots/
+rm create_csv
+rm generate_plots.py

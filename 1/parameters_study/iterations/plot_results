@@ -1,0 +1,21 @@
+#usr/bin/bash
+
+folder=$1
+repetitions=10
+
+c++ create_csv.cpp -o create_csv
+mv create_csv $folder/
+cp generate_plots.py $folder/
+cd $folder/
+
+for X in $(seq 1 $repetitions)
+    do
+        ./create_csv "test__$X.txt" "test__$X.csv" 
+        python3 generate_plots.py $X
+        rm "test__$X.csv"
+    done
+
+rm create_csv
+rm generate_plots.py
+mkdir plots
+mv *png plots/

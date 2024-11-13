@@ -15,18 +15,19 @@ cd ../OPERATIONS/
 module purge
 module load openMPI/4.1.6/gnu
 
-printf "" > "latencies_$MESSAGE_SIZE.txt"
+printf "" > "$MESSAGE_SIZE.txt"
 
 for R in "${receivers[@]}"
 do
     printf "Message to core: $R\n"
-    printf "Message to core: $R\n" >> "latencies_$MESSAGE_SIZE.txt"
+    printf "Message to core: $R\n" >> "$MESSAGE_SIZE.txt"
     mpirun -np 2 --cpu-list 0,$R osu_latency -m $MESSAGE_SIZE:$MESSAGE_SIZE > "temp.txt"
-    cat "temp.txt" >> "latencies_$MESSAGE_SIZE.txt"
+    cat "temp.txt" >> "$MESSAGE_SIZE.txt"
 done
 
 rm temp.txt
-mv "latencies_$MESSAGE_SIZE.txt" ../performance_model/
+mv "$MESSAGE_SIZE.txt" ../performance_model/
 cd ../performance_model/
-python3 edit_file.py "latencies_$MESSAGE_SIZE.txt"
+python3 edit_file.py "$MESSAGE_SIZE.txt"
+mv "$MESSAGE_SIZE.txt" p2p_latencies/
 

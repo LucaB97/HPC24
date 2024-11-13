@@ -10,4 +10,4 @@
 
 OPERATION=$1
 ALGORITHMS=("${@:2}")
-./mapping_variation.sh "thin" 48 $OPERATION $ALGORITHMS
+./mapping_variation "thin" 48 $OPERATION $ALGORITHMS

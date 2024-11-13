@@ -12,7 +12,7 @@ module purge
 module load openMPI/4.1.6/gnu
 
 # Compile the program
-mpicc -o mapping_ranks_to_id mapping_ranks_to_id.c
+mpicc -o mapping_ranks_to_ids mapping_ranks_to_ids.c
 
 # Array of mappings
 # MAPPINGS=("core" "L3cache" "numa" "socket" "node")
@@ -25,7 +25,7 @@ do
     OUTPUT_FILE="${M}_mapping.csv"
     
     # Run the MPI program with the specified mapping
-    mpirun --map-by $M -np 48 ./mapping_ranks_to_id "$OUTPUT_FILE"
+    mpirun --map-by $M -np 48 ./mapping_ranks_to_ids "$OUTPUT_FILE"
     
     # Check if the file was created
     if [ -f "$OUTPUT_FILE" ]; then
@@ -36,5 +36,5 @@ do
 done
 
 # Clean up
-rm mapping_ranks_to_id
+rm mapping_ranks_to_ids
 mv *csv csv_files/
