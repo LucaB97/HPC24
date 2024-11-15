@@ -3,7 +3,7 @@
 NODES=$1
 SIZE=$2
 REPETITIONS=$3
-NUMPROCS=(1 2 4 8 16 32 64 128 256)
+NUMPROCS=(1 2 4 8 16 32 64 128)
 
 srun --nodes=$NODES --ntasks-per-node=1 free > "memory"
 free_memory=$(grep Mem memory | awk '{print $4}' | sort -n | head -n 1)  #in kibibytes (KiB), where 1 KiB = 1024 bytes
@@ -24,21 +24,21 @@ module load openMPI/4.1.6/gnu
 mpicc -O3 qsort.c -o qsort
 
 ##perform strong scalability test
-printf "Test\tProcesses\tSize\t\tTotal\t\tCommunication\tSorting\t\tMerging\n" > "Weak.txt"
+printf "Test\tProcesses\tSize\t\tTotal\t\tCommunication\tSorting\t\tMerging\n" > "weak.txt"
 
 for P in "${NUMPROCS[@]}"
 do
     for R in $(seq 1 $REPETITIONS)
     do
-        printf "$R\t" >> "Weak.txt"
-        mpirun -np $P ./qsort $((P*SIZE)) >> "Weak.txt"
+        printf "$R\t" >> "weak.txt"
+        mpirun -np $P ./qsort $((P*SIZE)) >> "weak.txt"
     done
 done
 
 
 module purge
-mv Weak.txt results/
-mv steps.log results/Weak_mem_usage.log
+mv weak.txt results/
+mv steps.log results/weak_mem_usage.log
 rm qsort
 rm memory
 rm memory_req

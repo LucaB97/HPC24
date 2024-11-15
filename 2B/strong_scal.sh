@@ -3,7 +3,7 @@
 NODES=$1
 SIZE=$2
 REPETITIONS=$3
-NUMPROCS=(1 2 4 8 16 32 64 128 256)
+NUMPROCS=(1 2 4 8 16 32 64 128)
 
 srun --nodes=$NODES --ntasks-per-node=1 free > "memory"
 free_memory=$(grep Mem memory | awk '{print $4}' | sort -n | head -n 1)  #in kibibytes (KiB), where 1 KiB = 1024 bytes

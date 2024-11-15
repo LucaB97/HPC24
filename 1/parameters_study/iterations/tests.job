@@ -1,13 +1,13 @@
 #!/bin/bash
 
 #SBATCH --job-name=iterations_test
-#SBATCH --time=0-01:00:00
+#SBATCH --time=0-00:30:00
 #SBATCH -pTHIN
-#SBATCH -N2
-#SBATCH -n48
+#SBATCH -N1
+#SBATCH -n24
 #SBATCH --nodelist=thin001,thin002,thin003,thin004,thin005,thin006,thin007,thin008
 #SBATCH --output=%x.%j.out
 #SBATCH --error=%x.%j.err
 
 repetitions=$1
-./iters_warmup_variation.sh "THIN" 48 $repetitions
+./iters_warmup_variation "THIN" 24 $repetitions
