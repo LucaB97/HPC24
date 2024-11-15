@@ -1,5 +1,0 @@
-mv: cannot move 'test__1.txt' to '../parameters_study/iterations/tests/': Not a directory
-mv: cannot move 'test__2.txt' to '../parameters_study/iterations/tests/': Not a directory
-mv: cannot move 'test__3.txt' to '../parameters_study/iterations/tests/': Not a directory
-mv: cannot move 'test__4.txt' to '../parameters_study/iterations/tests/': Not a directory
-slurmstepd: error: *** JOB 887259 ON thin006 CANCELLED AT 2024-11-14T23:44:56 DUE TO TIME LIMIT ***
