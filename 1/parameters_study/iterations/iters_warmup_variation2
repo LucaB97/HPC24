@@ -1,0 +1,34 @@
+#/usr/bin/bash
+
+## get info for the execution
+node=$1
+cpus=$2
+operation=$3
+algorithms=("${@:4}")
+size_algs=${#algorithms[@]}
+
+## all the combinations of the following two variables values will be used
+ITERATIONS=(10000 50000)
+WARMUP=(200 1000)
+
+module purge
+module load openMPI/4.1.6/gnu
+cd ../../OPERATIONS/
+
+# For-loop on the used algorithms
+for A in "${algorithms[@]}"
+do  
+    printf "\nNode: $node  -  CPUS: $cpus  -  Operation: $operation  -  Algorithm: $A\n-----------------------------------------------------------------------\n" > "alg$A.txt"
+            
+    for I in "${ITERATIONS[@]}"
+    do
+        for W in "${WARMUP[@]}" 
+        do  
+	    printf "\nIterations: $I\nWarmup: $W" >> "alg$A.txt"
+            mpirun -np $cpus --mca coll_tuned_use_dynamic_rules true --mca coll_tuned_${operation}_algorithm $A osu_${operation} -m 256:524288 -f -z -i $I -x $W > "curr_results_{$A}.txt"
+            cat "curr_results_{$A}.txt" >> "alg$A.txt"
+    	done
+    done
+    rm curr_results_{$A}.txt
+    mv "alg$A.txt" ../parameters_study/iterations/results/$operation/
+done
