@@ -1,0 +1,71 @@
+
+
+Nprocs=2
+Allocation started------277297840
+Generation started------277297840
+Generation ended--------271031804
+Distribution started----271031804
+Distribution ended------264751140
+Freeing ended-----------267525156
+Merging started---------267611324
+Merging ended-----------264768544
+
+Nprocs=4
+Allocation started------276580628
+Generation started------276580628
+Generation ended--------270315912
+Distribution started----270315912
+Distribution ended------264017020
+Freeing ended-----------265266940
+Merging started---------265307936
+Merging ended-----------264014812
+
+Nprocs=8
+Allocation started------276116356
+Generation started------276116356
+Generation ended--------269867136
+Distribution started----269867136
+Distribution ended------263585092
+Freeing ended-----------269552452
+Merging started---------269585060
+Merging ended-----------264440048
+
+Nprocs=16
+Allocation started------273232816
+Generation started------273232816
+Generation ended--------267032152
+Distribution started----267032152
+Distribution ended------261500940
+Freeing ended-----------267436044
+Merging started---------267452228
+Merging ended-----------260003972
+
+Nprocs=32
+Allocation started------268569420
+Generation started------268569420
+Generation ended--------262907228
+Distribution started----262907228
+Distribution ended------258623276
+Freeing ended-----------264538256
+Merging started---------264539512
+Merging ended-----------254913668
+
+Nprocs=64
+Allocation started------264104436
+Generation started------264104436
+Generation ended--------258676692
+Distribution started----258676692
+Distribution ended------254033040
+Freeing ended-----------259945400
+Merging started---------259953836
+Merging ended-----------248841436
+
+Nprocs=128
+Allocation started------259755472
+Generation started------259755472
+Generation ended--------254369908
+Distribution started----254369908
+Distribution ended------250567144
+Freeing ended-----------256513576
+Merging started---------256520928
+Merging ended-----------248086108

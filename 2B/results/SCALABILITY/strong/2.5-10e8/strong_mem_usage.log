@@ -1,0 +1,211 @@
+
+
+Nprocs=2
+Allocation started------273853048
+Generation started------273853048
+Generation ended--------258192612
+Distribution started----258192612
+Distribution ended------243861592
+Freeing ended-----------251516660
+Merging started---------251705040
+Merging ended-----------243881516
+
+Nprocs=2
+Allocation started------274900000
+Generation started------274900000
+Generation ended--------259293872
+Distribution started----259293872
+Distribution ended------244901588
+Freeing ended-----------252750620
+Merging started---------252787156
+Merging ended-----------245113424
+
+Nprocs=2
+Allocation started------276139228
+Generation started------276139228
+Generation ended--------260529628
+Distribution started----260529628
+Distribution ended------245079736
+Freeing ended-----------252931276
+Merging started---------252934752
+Merging ended-----------245107696
+
+Nprocs=4
+Allocation started------275861632
+Generation started------275861632
+Generation ended--------260200468
+Distribution started----260200468
+Distribution ended------244481776
+Freeing ended-----------248191468
+Merging started---------248279088
+Merging ended-----------244331560
+
+Nprocs=4
+Allocation started------275352788
+Generation started------275352788
+Generation ended--------259733016
+Distribution started----259733016
+Distribution ended------244095496
+Freeing ended-----------247798752
+Merging started---------248001936
+Merging ended-----------244314280
+
+Nprocs=4
+Allocation started------275271540
+Generation started------275271540
+Generation ended--------259661588
+Distribution started----259661588
+Distribution ended------244060620
+Freeing ended-----------247778124
+Merging started---------247892396
+Merging ended-----------244073380
+
+Nprocs=8
+Allocation started------275426072
+Generation started------275425568
+Generation ended--------259774516
+Distribution started----259774516
+Distribution ended------244073396
+Freeing ended-----------259518504
+Merging started---------259563992
+Merging ended-----------252036084
+
+Nprocs=8
+Allocation started------275394856
+Generation started------275394856
+Generation ended--------259853520
+Distribution started----259853520
+Distribution ended------244479120
+Freeing ended-----------259937312
+Merging started---------260043028
+Merging ended-----------251296936
+
+Nprocs=8
+Allocation started------274465664
+Generation started------274465160
+Generation ended--------258945160
+Distribution started----258945160
+Distribution ended------243628656
+Freeing ended-----------259095596
+Merging started---------259148624
+Merging ended-----------250586296
+
+Nprocs=16
+Allocation started------273672708
+Generation started------273672708
+Generation ended--------258264272
+Distribution started----258264272
+Distribution ended------243433916
+Freeing ended-----------258908236
+Merging started---------258962404
+Merging ended-----------248502564
+
+Nprocs=16
+Allocation started------272449924
+Generation started------272449924
+Generation ended--------257256304
+Distribution started----257256304
+Distribution ended------242895084
+Freeing ended-----------258354036
+Merging started---------258386472
+Merging ended-----------248012776
+
+Nprocs=16
+Allocation started------272043828
+Generation started------272043828
+Generation ended--------256801736
+Distribution started----256801736
+Distribution ended------242202352
+Freeing ended-----------257864424
+Merging started---------257886364
+Merging ended-----------247126544
+
+Nprocs=32
+Allocation started------270343864
+Generation started------270343864
+Generation ended--------255235948
+Distribution started----255235948
+Distribution ended------240922092
+Freeing ended-----------256405224
+Merging started---------256416036
+Merging ended-----------242369144
+
+Nprocs=32
+Allocation started------267787968
+Generation started------267787968
+Generation ended--------253202692
+Distribution started----253202692
+Distribution ended------239657848
+Freeing ended-----------255129320
+Merging started---------255150768
+Merging ended-----------239927884
+
+Nprocs=32
+Allocation started------265444364
+Generation started------265444364
+Generation ended--------250510040
+Distribution started----250510040
+Distribution ended------236160408
+Freeing ended-----------251681820
+Merging started---------251718584
+Merging ended-----------238283360
+
+Nprocs=64
+Allocation started------262974728
+Generation started------262974728
+Generation ended--------249109968
+Distribution started----249109968
+Distribution ended------236675676
+Freeing ended-----------252218704
+Merging started---------252218864
+Merging ended-----------233528284
+
+Nprocs=64
+Allocation started------262357764
+Generation started------262357764
+Generation ended--------248615836
+Distribution started----248716164
+Distribution ended------236832508
+Freeing ended-----------252341316
+Merging started---------252351400
+Merging ended-----------234252704
+
+Nprocs=64
+Allocation started------271588468
+Generation started------271588468
+Generation ended--------256428588
+Distribution started----256428588
+Distribution ended------240971976
+Freeing ended-----------256446968
+Merging started---------256455788
+Merging ended-----------238191208
+
+Nprocs=128
+Allocation started------261589168
+Generation started------261589168
+Generation ended--------248515312
+Distribution started----248515072
+Distribution ended------236405440
+Freeing ended-----------251999932
+Merging started---------252016496
+Merging ended-----------234447372
+
+Nprocs=128
+Allocation started------265352164
+Generation started------265352164
+Generation ended--------251589948
+Distribution started----251590604
+Distribution ended------237352744
+Freeing ended-----------252927336
+Merging started---------252927588
+Merging ended-----------234522036
+
+Nprocs=128
+Allocation started------265426584
+Generation started------265426584
+Generation ended--------251482856
+Distribution started----251507296
+Distribution ended------237155380
+Freeing ended-----------252681204
+Merging started---------252687120
+Merging ended-----------230730836

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #SBATCH --job-name=ex2_str
-#SBATCH --time=0-00:15:00
+#SBATCH --time=0-00:06:00
 #SBATCH -pEPYC
 #SBATCH -n128
 #SBATCH --output=%x%j.out
@@ -13,5 +13,5 @@ SIZE=$1
 REPEAT=$2
 
 squeue | grep lbertone >> nodes
-./strong_scal.sh 1 $SIZE $REPEAT
-#./weak_scal.sh 2 $SIZE
+./strong_scal2.sh 1 $SIZE $REPEAT
+
