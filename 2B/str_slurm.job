@@ -10,8 +10,7 @@
 
 
 SIZE=$1
-REPEAT=$2
 
 squeue | grep lbertone >> nodes
-./strong_scal2.sh 1 $SIZE $REPEAT
+./strong_scal.sh 1 $SIZE 1 2 4 8 16 32 64 128
 

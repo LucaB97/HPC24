@@ -2,21 +2,30 @@
 
 NODES=$1
 SIZE=$2
-REPETITIONS=$3
-NUMPROCS=(1 2 4 8 16 32 64 128)
+NUMPROCS=("${@:3}")
 
 srun --nodes=$NODES --ntasks-per-node=1 free > "memory"
 free_memory=$(grep Mem memory | awk '{print $4}' | sort -n | head -n 1)  #in kibibytes (KiB), where 1 KiB = 1024 bytes
-gcc -o memory_req memory_req.c
-data_size=$(./memory_req)  # Size of each data entry in bytes
-max_segment_size=$(echo "scale=0; 0.7 * 1024 * $free_memory / (7.5 * $data_size * 128)" | bc)
-#max_segment_size=$(echo "scale=0; 0.7 * 1024 * $free_memory / (7.5 * $data_size * ${NUMPROCS[-1]})" | bc)
-printf "max segment size: $max_segment_size\n"
 
-#SIZE=$max_segment_size
-#if [ $SIZE -ge $max_segment_size ]; then
-#    SIZE=$max_segment_size
-#fi
+# Evaluate the size of each data entry in bytes
+gcc -o data_unit_memory data_unit_memory.c
+data_size=$(./data_unit_memory)
+
+# Find the highest number of CPUs requested
+maxP=$(printf "%s\n" "${NUMPROCS[@]}" | sort -n | tail -n 1)
+
+# Evaluate the total memory requirements for the mydata and receive_buffer arrays 
+log2_P=$(echo "scale=10; l($maxP)/l(2)" | bc -l)
+memory_req=$(echo "scale=10; ($log2_P + 2)/2 + ($log2_P + 1)/4" | bc -l)
+
+# EVALUATE MAX PROBLEM SIZE
+MAX_SIZE=$(echo "scale=0; 0.70 * 1024 * $free_memory / ($memory_req * $data_size *$maxP)" | bc)
+printf "max size: $MAX_SIZE\n"
+
+# If the user specified size is too big, replace it with the maximum
+if [ $SIZE -ge $MAX_SIZE ]; then
+    SIZE=$MAX_SIZE
+fi
 
 ##load modules & create executable for the algorithm
 module purge
@@ -28,11 +37,7 @@ printf "Test\tProcesses\tSize\t\tTotal\t\tCommunication\tSorting\t\tMerging\n" >
 
 for P in "${NUMPROCS[@]}"
 do
-    for R in $(seq 1 $REPETITIONS)
-    do
-        printf "$R\t" >> "weak.txt"
-        mpirun -np $P ./qsort $((P*SIZE)) >> "weak.txt"
-    done
+    mpirun -np $P ./qsort $((P*SIZE)) >> "weak.txt"
 done
 
 
@@ -41,5 +46,5 @@ mv weak.txt results/
 mv steps.log results/weak_mem_usage.log
 rm qsort
 rm memory
-rm memory_req
+rm data_unit_memory
 
