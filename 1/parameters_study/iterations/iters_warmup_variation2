@@ -18,17 +18,19 @@ cd ../../OPERATIONS/
 # For-loop on the used algorithms
 for A in "${algorithms[@]}"
 do  
-    printf "\nNode: $node  -  CPUS: $cpus  -  Operation: $operation  -  Algorithm: $A\n-----------------------------------------------------------------------\n" > "alg$A.txt"
+    printf "\nNode: $node  -  CPUS: $cpus  -  Operation: $operation  -  Algorithm: $A\n-----------------------------------------------------------------------\n" > "${operation}_alg${A}_iters.txt"
             
     for I in "${ITERATIONS[@]}"
     do
         for W in "${WARMUP[@]}" 
         do  
-	    printf "\nIterations: $I\nWarmup: $W" >> "alg$A.txt"
-            mpirun -np $cpus --mca coll_tuned_use_dynamic_rules true --mca coll_tuned_${operation}_algorithm $A osu_${operation} -m 256:524288 -f -z -i $I -x $W > "curr_results_{$A}.txt"
-            cat "curr_results_{$A}.txt" >> "alg$A.txt"
+	    printf "\nIterations: $I\nWarmup: $W" >> "${operation}_alg${A}_iters.txt"
+            mpirun -np $cpus --mca coll_tuned_use_dynamic_rules true --mca coll_tuned_${operation}_algorithm $A osu_${operation} -m 256:524288 -f -z -i $I -x $W > "${operation}_curr_${A}_iters.txt"
+            cat "${operation}_curr_${A}_iters.txt" >> "${operation}_alg${A}_iters.txt"
     	done
     done
-    rm curr_results_{$A}.txt
-    mv "alg$A.txt" ../parameters_study/iterations/results/$operation/
+    rm ${operation}_curr_${A}_iters.txt
+    mv "${operation}_alg${A}_iters.txt" ../parameters_study/iterations/results/$operation/alg${A}.txt
 done
+
+module purge
