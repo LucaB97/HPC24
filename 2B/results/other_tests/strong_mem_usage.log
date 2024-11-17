@@ -1,0 +1,31 @@
+
+
+Nprocs=32
+Allocation started------298105408
+Generation started------298105408
+Generation ended--------265721800
+Distribution started----265721800
+Distribution ended------233054760
+Freeing ended-----------265373596
+Merging started---------265395700
+Merging ended-----------246981632
+
+Nprocs=64
+Allocation started------294200920
+Generation started------294200920
+Generation ended--------262749664
+Distribution started----262749544
+Distribution ended------230197072
+Freeing ended-----------262516532
+Merging started---------262526920
+Merging ended-----------240799720
+
+Nprocs=128
+Allocation started------288891716
+Generation started------288891716
+Generation ended--------259430436
+Distribution started----259430436
+Distribution ended------226451624
+Freeing ended-----------258788640
+Merging started---------258796836
+Merging ended-----------237622088

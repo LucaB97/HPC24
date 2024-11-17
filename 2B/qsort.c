@@ -274,8 +274,9 @@ int main(int argc, char **argv) {
         if (rank + step < size) {            
             //// The receiver gets the data and merges it with its own, then updates own chunk size
             ////
-            MPI_Recv(receive_buffer, total_sizes[rank+step], mpi_data_type, rank + step, 1, MPI_COMM_WORLD, &status);
-            merge(mydata, own_sizes[rank], receive_buffer, total_sizes[rank+step], total_sizes[rank]);
+	    MPI_Recv(receive_buffer, total_sizes[rank+step], mpi_data_type, rank + step, 1, MPI_COMM_WORLD, &status);
+            print_memory_info("\nWhile merging------", false);
+	    merge(mydata, own_sizes[rank], receive_buffer, total_sizes[rank+step], total_sizes[rank]);
             own_sizes[rank] += total_sizes[rank+step];
         }
     }

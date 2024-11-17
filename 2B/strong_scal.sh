@@ -19,13 +19,13 @@ log2_P=$(echo "scale=10; l($P)/l(2)" | bc -l)
 memory_req=$(echo "scale=10; ($log2_P + 2)/2 + ($log2_P + 1)/4" | bc -l)
 
 # EVALUATE MAX PROBLEM SIZE
-MAX_SIZE=$(echo "scale=0; 0.70 * 1024 * $free_memory / ($memory_req * $data_size)" | bc)
+MAX_SIZE=$(echo "scale=0; 0.70 * 1024 * $free_memory / (3 * $data_size)" | bc)
 printf "max size: $MAX_SIZE\n"
 
 # If the user specified size is too big, replace it with the maximum
-if [ $SIZE -ge $MAX_SIZE ]; then
-    SIZE=$MAX_SIZE
-fi
+#if [ $SIZE -ge $MAX_SIZE ]; then
+#    SIZE=$MAX_SIZE
+#fi
 
 ##load modules & create executable for the algorithm
 module purge
