@@ -1,0 +1,15 @@
+#!/bin/bash
+
+#SBATCH --job-name=_
+#SBATCH --time=0-00:10:00
+#SBATCH -pTHIN
+#SBATCH -n8
+#SBATCH --nodelist=thin001,thin002,thin003,thin004,thin005,thin006,thin007,thin008
+#SBATCH --output=%x.%j.out
+#SBATCH --error=%x.%j.err
+#SBATCH -N1
+
+repetitions=$1
+operation=$2
+algorithms=("${@:3}")
+./run.sh "thin" 8 $repetitions $operation ${algorithms[@]}
