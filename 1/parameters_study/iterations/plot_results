@@ -1,7 +1,7 @@
 #usr/bin/bash
 
 folder=$1
-repetitions=10
+repetitions=$2
 
 c++ create_csv.cpp -o create_csv
 mv create_csv $folder/

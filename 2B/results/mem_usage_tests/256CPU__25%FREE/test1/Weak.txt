@@ -1,2 +1,0 @@
-Test	Processes	Size		Total		Communication	Sorting		Merging
-1	256		421013248	69.273192	12.557358	0.233859	56.481975

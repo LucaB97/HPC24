@@ -1,45 +1,52 @@
+import pandas as pd
 import plotly.graph_objects as go
 import numpy as np
-import sys
-import pandas as pd
 
-def main(file_name):
-    data = pd.read_csv(file_name)
-    # Filter data for a single Algorithm for better clarity
-    # data = data[data['Algorithm'] == 0]
+# Read data from CSV file
+df = pd.read_csv('summarized.csv')
 
-    # Create meshgrid for Procs and Size
-    sizes = sorted(data['Size'].unique())
-    procs = sorted(data['Procs'].unique())
-    Z = data.pivot(index='Size', columns='Procs', values='Avg Latency(us) Mean').values
-    print("Z shape:", Z.shape)
-    print("Number of Sizes (x-axis):", len(sizes))
-    print("Number of Procs (y-axis):", len(procs))
+# Extract the relevant columns
+procs = df['Procs'].to_numpy()
+size = df['Size'].to_numpy()
+latency = df['Avg Latency(us) Mean'].to_numpy()
 
-    # Create the 3D surface plot
-    fig = go.Figure(data=[go.Surface(z=Z, x=np.log10(sizes), y=procs)])
-    fig.update_layout(
-        title='3D Surface Plot of Avg Latency',
-        scene=dict(
-            xaxis_title='Log(Size)',
-            yaxis_title='Procs',
-            zaxis_title='Avg Latency (us)'
-        )
-    )
-    
-    # # Save the plot as a PNG file
-    # fig.write_image("3d_surface_plot.png")  # Save as PNG
-    # print("3D Surface Plot saved as 3d_surface_plot.png")
+# Apply the logarithmic transformation to the 'Size' values (log base 10)
+log_size = np.log10(size)
 
-    # Optionally, save as an interactive HTML file
-    fig.write_html("3d_surface_plot.html")  # Save as HTML
-    print("3D Surface Plot saved as 3d_surface_plot.html")
+# Create a meshgrid for plotting using the log-transformed size
+unique_procs = np.unique(procs)
+unique_log_sizes = np.unique(log_size)
+X, Y = np.meshgrid(unique_log_sizes, unique_procs)
 
-    # Show the plot interactively
-    # fig.show()
+# Create a grid of latency values
+Z = np.zeros(X.shape)
 
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python plot3.py <file_name>")
-    else:
-        main(sys.argv[1])
+# Fill the Z array with corresponding latency values
+for i, proc in enumerate(unique_procs):
+    for j, log_sz in enumerate(unique_log_sizes):
+        # Find the corresponding latency value for each proc and log-transformed size
+        latency_value = latency[(procs == proc) & (log_size == log_sz)]
+        if len(latency_value) > 0:
+            Z[i, j] = latency_value[0]
+
+# Create the plotly 3D surface plot
+fig = go.Figure(data=[go.Surface(
+    z=Z,
+    x=X,
+    y=Y,
+    colorscale='Viridis',
+    colorbar_title='Avg Latency (us)'
+)])
+
+# Set axis labels, including log-transformed size
+fig.update_layout(
+    scene=dict(
+        xaxis_title='Log(Size)',  # Update axis label for log-transformed size
+        yaxis_title='Procs',
+        zaxis_title='Avg Latency (us)'
+    ),
+    title='3D Surface Plot of Latency vs Log(Size) and Procs'
+)
+
+# Save as HTML (interactive)
+fig.write_html("interactive_3d_plot_log_size.html")
