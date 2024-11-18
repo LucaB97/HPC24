@@ -1,0 +1,162 @@
+#if defined(__STDC__)
+#  if (__STDC_VERSION__ >= 199901L)
+#     define _XOPEN_SOURCE 700
+#  endif
+#endif
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+#include <omp.h>
+#include <complex.h>
+
+
+void generate_gradient_omp(void **, int, int, double, double, double, double, int, const int);
+int evaluation(double complex, int);
+void write_pgm_image(void *, int, int, int, const char *);
+void print_complex(double complex);
+
+
+
+int main(int argc, char** argv) {
+    if (argc != 8) {
+        printf("Usage: ./Mandelbrot <n_x> <n_y> <x_L> <y_L> <x_R> <y_R> <I_max>\n");
+        return 0;
+    }
+
+    int n_x = atoi(argv[1]);
+    int n_y = atoi(argv[2]);
+    double x_L = atof(argv[3]);
+    double y_L = atof(argv[4]);
+    double x_R = atof(argv[5]);
+    double y_R = atof(argv[6]);
+    int I_max = atoi(argv[7]);
+    void * image = NULL;
+
+    int N = 1;
+
+#if defined(_OPENMP)
+    #pragma omp parallel
+    {
+        #pragma omp single
+        N = omp_get_num_threads();
+    }
+#endif
+
+    // printf("Threads\tGeneration time\n");
+    for (int i = 1; i <= N; i++) {
+        double start_time = omp_get_wtime();
+        generate_gradient_omp(&image, n_x, n_y, x_L, y_L, x_R, y_R, I_max, i);
+        double end_time = omp_get_wtime();
+        double total_time = end_time - start_time;
+        printf("%d,%f\n", i, total_time);
+        
+        if (i == 1 || i == 8) {
+            char filename[50];
+            sprintf(filename, "weak_%d.pgm", i);
+            int scaled_n_x = sqrt(i)*n_x;
+            int scaled_n_y = sqrt(i)*n_y;
+            write_pgm_image(image, I_max, scaled_n_x, scaled_n_y, filename);
+        }
+        free(image);     
+    }
+
+    return 0;
+}
+
+
+
+void generate_gradient_omp(void **pixels, int n_x, int n_y, double xL, double yL, double xR, double yR, int i_max, const int n_threads) {
+    
+#if defined(_OPENMP)
+    
+    int scaled_n_x = sqrt(n_threads)*n_x;
+    int scaled_n_y = sqrt(n_threads)*n_y;
+    double delta_x = (xR - xL) / scaled_n_x;
+    double delta_y = (yR - yL) / scaled_n_y;
+
+    // Allocate memory for pixels based on i_max outside the function
+    if (i_max < 256) {
+        *pixels = malloc(scaled_n_x * scaled_n_y * sizeof(char));  // Allocate memory for 1-byte per pixel
+    } else {
+        *pixels = malloc(scaled_n_x * scaled_n_y * sizeof(short int));  // Allocate memory for 2 bytes per pixel
+    }
+
+    if (*pixels == NULL) {
+        fprintf(stderr, "Memory allocation failed!\n");
+        exit(1);  // Exit if memory allocation fails
+    }
+
+    omp_set_num_threads(n_threads);    
+    #pragma omp parallel
+    {
+        #pragma omp for schedule(dynamic) collapse(2)
+        for (int i = 0; i < scaled_n_x; i++) {
+            for (int j = 0; j < scaled_n_y; j++) {
+                double real = xL + j * delta_x;
+                double imag = yL + i * delta_y;
+                double complex c = real + imag * I;
+                if (i_max < 256) {
+                    // Cast to char* and assign pixel values
+                    ((char *)*pixels)[(i * scaled_n_y) + j] = evaluation(c, i_max);
+                } else {
+                    // Cast to short int* and assign pixel values
+                    ((short int *)*pixels)[(i * scaled_n_y) + j] = evaluation(c, i_max);
+                }
+            }
+        }
+    }
+
+#else
+
+    double delta_x = (xR - xL) / n_x;
+    double delta_y = (yR - yL) / n_y;
+
+    // Allocate memory for pixels based on i_max outside the function
+    if (i_max < 256) {
+        *pixels = malloc(n_x * n_y * sizeof(char));  // Allocate memory for 1-byte per pixel
+    } else {
+        *pixels = malloc(n_x * n_y * sizeof(short int));  // Allocate memory for 2 bytes per pixel
+    }
+
+    if (*pixels == NULL) {
+        fprintf(stderr, "Memory allocation failed!\n");
+        exit(1);  // Exit if memory allocation fails
+    }
+    for (int i = 0; i < n_x; i++) {
+        for (int j = 0; j < n_y; j++) {
+            double real = xL + j * delta_x;
+            double imag = yL + i * delta_y;
+            double complex c = real + imag * I;
+            if (i_max < 256) {
+                // Cast to char* and assign pixel values
+                ((char *)*pixels)[(i * n_y) + j] = evaluation(c, i_max);
+            } else {
+                // Cast to short int* and assign pixel values
+                ((short int *)*pixels)[(i * n_y) + j] = evaluation(c, i_max);
+            }
+        }
+    }
+
+#endif
+}
+
+
+int evaluation(double complex c, int i_max) {
+    double complex z = 0;
+    int iter = 1;
+    while (iter <= i_max && cabs(z) <= 2) {
+        z = z * z + c;
+        iter++;
+    }
+    return (cabs(z) <= 2) ? 0 : iter - 1;
+}
+
+
+void write_pgm_image(void *image, int maxval, int xsize, int ysize, const char *image_name) {
+    FILE* image_file = fopen(image_name, "w");
+    int color_depth = 1 + (maxval > 255);
+    fprintf(image_file, "P5\n# generated by\n# put here your name\n%d %d\n%d\n", xsize, ysize, maxval);
+    fwrite(image, 1, xsize * ysize * color_depth, image_file);
+    fclose(image_file);
+}
